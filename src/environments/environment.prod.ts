@@ -7,7 +7,7 @@ import packageInfo from '../../package.json';
 // 1. API_DOMAIN : Le domaine de votre API backend
 // 2. FRONTEND_DOMAIN : Le domaine de votre frontend (optionnel)
 
-const API_DOMAIN = 'api.fpbg.singcloud.ga'; // MODIFIEZ ICI pour votre domaine API
+const API_DOMAIN = 'localhost'; // MODIFIEZ ICI pour votre domaine API
 const FRONTEND_DOMAIN = 'fpbg.singcloud.ga';   // MODIFIEZ ICI pour votre domaine frontend (si différent)
 
 // Le reste se configure automatiquement
