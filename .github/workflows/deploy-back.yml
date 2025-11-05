@@ -1,0 +1,75 @@
+name: Déploiement backend FPBG (branche test-backend)
+
+on:
+  push:
+    branches:
+      - test-backend
+  workflow_dispatch:
+
+jobs:
+  deploy-back:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Déploiement via SSH sur le serveur
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.PRIVATE_KEY }}
+          passphrase: ${{ secrets.PASSPHRASE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            set -e
+            echo "=== Connexion au serveur (backend) ==="
+
+            BASE_DIR="${{ secrets.SERVER_PATH_BACK }}"
+            echo "📁 Dossier cible : $BASE_DIR"
+            mkdir -p "$BASE_DIR"
+            cd "$BASE_DIR"
+
+            git config --global credential.helper ""
+
+            # --- CLONAGE / MISE À JOUR ---
+            if [ ! -d .git ]; then
+              echo "=== Aucun dépôt Git trouvé, clonage initial (test-backend) ==="
+              git clone --depth=1 --branch test-backend "${{ secrets.GIT_REPO_URL }}" .
+            else
+              echo "=== Dépôt déjà présent, mise à jour ==="
+              git remote set-url origin "${{ secrets.GIT_REPO_URL }}"
+              git fetch origin --prune
+              if git show-ref --verify --quiet refs/remotes/origin/test-backend; then
+                git checkout -B test-backend origin/test-backend
+              else
+                echo "❌ origin/test-backend introuvable, reclonage..."
+                cd ..
+                rm -rf "$BASE_DIR"
+                mkdir -p "$BASE_DIR"
+                cd "$BASE_DIR"
+                git clone --depth=1 --branch test-backend "${{ secrets.GIT_REPO_URL }}" .
+              fi
+            fi
+
+            echo "=== Vérification Node.js / npm / pm2 ==="
+            if ! command -v node >/dev/null 2>&1; then
+              curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+              sudo apt-get install -y nodejs
+            fi
+            if ! command -v pm2 >/dev/null 2>&1; then
+              sudo npm install -g pm2
+            fi
+
+            echo "✅ Node version : $(node -v)"
+            echo "✅ NPM version  : $(npm -v)"
+            echo "✅ PM2 version  : $(pm2 -v)"
+
+            echo "=== Installation des dépendances ==="
+            npm install
+
+            echo "=== Démarrage / redémarrage du backend ==="
+            # Si ton fichier d'entrée est src/server.ts avec tsx :
+            pm2 restart fpbg-back || pm2 start npx --name fpbg-back -- tsx src/server.ts
+
+            pm2 save
+
+            echo "=== ✅ Déploiement backend terminé ==="
