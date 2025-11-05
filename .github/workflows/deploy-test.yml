@@ -16,38 +16,32 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
 
-          # ➜ Choisir UNE méthode d’authentification :
-          # 1) si tu utilises un mot de passe SSH :
-          password: ${{ secrets.SSH_PASSWORD }}
-          # 2) si tu utilises une clé privée :
-          # key: ${{ secrets.SSH_PRIVATE_KEY }}
-
+          # --- Authentification par clé ---
+          key: ${{ secrets.PRIVATE_KEY }}
+          passphrase: ${{ secrets.PASSPHRASE_KEY }}
           port: ${{ secrets.SSH_PORT }}
+
+          # --- Commandes exécutées sur le serveur ---
           script: |
-            set -e  # stoppe le script dès qu'une commande échoue
+            set -e
 
             echo "=== Connexion sur le serveur ==="
             cd '${{ secrets.SERVER_PATH }}'
 
             echo "=== Récupération du code (branche test) ==="
             git fetch origin
-
-            # si la branche test n'existe pas encore localement, on la crée
             if git rev-parse --verify test >/dev/null 2>&1; then
               git checkout test
             else
               git checkout -b test origin/test
             fi
-
             git pull origin test
 
             echo "=== Installation des dépendances ==="
             npm install --production
 
             echo "=== (Re)démarrage de l'app avec PM2 ==="
-            # si le process existe, on restart, sinon on le crée
             pm2 restart guichet-fpbg || pm2 start server.js --name guichet-fpbg
-
             pm2 save
 
-            echo "=== Déploiement terminé avec succès ✅ ==="
+            echo "=== ✅ Déploiement terminé avec succès ==="
