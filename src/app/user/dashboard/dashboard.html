@@ -1,0 +1,599 @@
+<!-- USER DASHBOARD — FPBG (vue adaptée à la maquette) -->
+<div class="min-h-screen bg-[#F7F9FC] text-[#0B1F2C]">
+  <!-- Header -->
+  <header class="px-6 pt-8 pb-4">
+    <div class="grid grid-cols-1 md:grid-cols-[1fr,auto] items-start gap-6">
+      <div>
+        <h1 class="text-[28px] md:text-[34px] font-semibold tracking-tight drop-shadow-sm">
+          Tableau de bord
+        </h1>
+        <p class="mt-1 text-slate-500">Votre espace projet FPBG.</p>
+      </div>
+
+      <!-- Profil à droite -->
+      <!-- Avatar + menu -->
+      <div class="relative select-none">
+        <!-- Bouton avatar -->
+        <!-- Avatar + menu (seulement les lignes <img>/<ng-template> changent) -->
+        <button
+          type="button"
+          (click)="toggleAvatarMenu($event)"
+          class="flex items-center gap-3 group"
+        >
+          <div class="leading-tight text-right">
+            <div class="text-sm font-semibold tracking-wide uppercase text-slate-900">
+              {{ user().fullName || '—' }}
+            </div>
+            <div class="text-sm font-semibold text-emerald-600">PORTEUR DE PROJET</div>
+          </div>
+
+          <!-- Afficher l'image UNIQUEMENT si une URL existe ET pas d'erreur -->
+          <ng-container *ngIf="user().photoUrl && !imgError(); else fallbackAvatar">
+            <img
+              [src]="user().photoUrl"
+              (error)="onAvatarLoadError()"
+              width="44"
+              height="44"
+              alt="Avatar"
+              class="object-cover bg-white rounded-full h-11 w-11 ring-2 ring-emerald-500/70"
+            />
+          </ng-container>
+        </button>
+
+        <ng-template #fallbackAvatar>
+          <div
+            class="grid font-bold rounded-full h-11 w-11 ring-2 ring-emerald-500/70 place-items-center bg-emerald-50 text-emerald-700"
+          >
+            {{ initials() }}
+          </div>
+        </ng-template>
+
+        <!-- Menu déroulant -->
+        <div
+          *ngIf="avatarMenuOpen()"
+          class="absolute right-0 z-50 w-56 py-2 mt-2 bg-white border shadow-lg rounded-xl border-slate-200"
+        >
+          <!-- Ajouter une photo -->
+          <button
+            type="button"
+            (click)="triggerAvatarUpload()"
+            class="w-full text-left px-3 py-2.5 hover:bg-slate-50 flex items-center gap-2 text-slate-700"
+          >
+            <!-- lucide: image -->
+            <svg
+              class="w-5 h-5 text-slate-500"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+              <circle cx="9" cy="9" r="2"></circle>
+              <path d="M21 15l-3.5-3.5a2.12 2.12 0 0 0-3 0L6 20"></path>
+            </svg>
+            Ajouter une photo
+          </button>
+
+          <!-- Retirer la photo -->
+          <button
+            type="button"
+            (click)="removeAvatar()"
+            class="w-full text-left px-3 py-2.5 hover:bg-slate-50 flex items-center gap-2 text-slate-700"
+          >
+            <!-- lucide: user-x -->
+            <svg
+              class="w-5 h-5 text-slate-500"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="m17 8 5 5m0-5-5 5"></path>
+            </svg>
+            Retirer la photo
+          </button>
+
+          <div class="my-2 border-t border-slate-200"></div>
+
+          <!-- Se déconnecter -->
+          <button
+            type="button"
+            (click)="logout()"
+            class="w-full text-left px-3 py-2.5 hover:bg-red-50 flex items-center gap-2 text-red-600 font-medium"
+          >
+            <!-- lucide: log-out -->
+            <svg
+              class="w-5 h-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <polyline points="16 17 21 12 16 7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+            Se déconnecter
+          </button>
+        </div>
+
+        <!-- input fichier caché -->
+        <input
+          #fileInput
+          type="file"
+          class="hidden"
+          accept="image/png,image/jpeg,image/webp"
+          (change)="onAvatarFileChange($event)"
+        />
+      </div>
+    </div>
+  </header>
+
+  <main class="px-4 pb-12 md:px-6">
+    <!-- Stats rapides pour utilisateur normal (un seul projet) -->
+    <section
+      class="grid grid-cols-1 gap-4 mb-6 sm:grid-cols-2 lg:grid-cols-3"
+      *ngIf="mesDemandes().length > 0"
+    >
+      <!-- Statut du projet -->
+      <div class="p-5 bg-white border shadow-sm rounded-xl border-slate-200">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-slate-500">Statut du projet</p>
+            <span
+              class="inline-block px-3 py-1 mt-2 text-sm font-semibold rounded-full"
+              [ngClass]="statutCssClass(mesDemandes()[0])"
+            >
+              {{ statutLabel(mesDemandes()[0]) }}
+            </span>
+          </div>
+          <div class="flex items-center justify-center w-12 h-12 bg-blue-100 rounded-lg">
+            <svg
+              class="w-6 h-6 text-blue-600"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Durée du projet -->
+      <div class="p-5 bg-white border shadow-sm rounded-xl border-slate-200">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-slate-500">Durée du projet</p>
+            <p class="mt-1 text-2xl font-bold text-slate-900">
+              {{ mesDemandes()[0].dureeMois || 0 }} mois
+            </p>
+          </div>
+          <div class="flex items-center justify-center w-12 h-12 bg-purple-100 rounded-lg">
+            <svg
+              class="w-6 h-6 text-purple-600"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Budget du projet -->
+      <div class="p-5 bg-white border shadow-sm rounded-xl border-slate-200">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-slate-500">Budget demandé</p>
+            <p class="mt-1 text-2xl font-bold text-emerald-600">
+              {{
+                (mesDemandes()[0].montantTotal || 0) > 0
+                  ? ((mesDemandes()[0].montantTotal || 0) | currency : 'XAF' : 'symbol' : '1.0-0')
+                  : 'Non spécifié'
+              }}
+            </p>
+          </div>
+          <div class="flex items-center justify-center w-12 h-12 rounded-lg bg-emerald-100">
+            <svg
+              class="w-6 h-6 text-emerald-600"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section du projet unique -->
+    <section class="overflow-hidden bg-white border shadow-sm rounded-2xl border-slate-200">
+      <!-- Header de la section -->
+      <div class="px-6 py-4 border-b bg-gradient-to-r from-emerald-50 to-teal-50 border-slate-200">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-emerald-100">
+              <svg
+                class="w-5 h-5 text-emerald-700"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <path d="M14 2v6h6"></path>
+                <path d="M16 13H8"></path>
+                <path d="M16 17H8"></path>
+                <path d="M10 9H8"></path>
+              </svg>
+            </div>
+            <div>
+              <h2 class="text-xl font-semibold text-slate-900">Mon Projet</h2>
+              <p class="text-sm text-slate-500">Consultez et suivez votre demande de subvention</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-6">
+        <!-- Loading -->
+        <div *ngIf="loadingDemandes()" class="flex flex-col items-center justify-center py-12">
+          <svg
+            class="w-10 h-10 mb-4 animate-spin text-emerald-600"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              class="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              stroke-width="4"
+            ></circle>
+            <path
+              class="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            ></path>
+          </svg>
+          <p class="text-slate-500">Chargement de votre projet...</p>
+        </div>
+
+        <!-- Aucun projet -->
+        <div
+          *ngIf="!loadingDemandes() && mesDemandes().length === 0"
+          class="flex flex-col items-center justify-center py-16 bg-gradient-to-b from-slate-50 to-white rounded-xl"
+        >
+          <div class="flex items-center justify-center w-20 h-20 mb-4 rounded-full bg-slate-100">
+            <svg
+              class="w-10 h-10 text-slate-400"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <path d="M14 2v6h6"></path>
+            </svg>
+          </div>
+          <h3 class="mb-2 text-lg font-medium text-slate-900">Aucun projet pour le moment</h3>
+          <p class="max-w-md mb-6 text-center text-slate-500">
+            Commencez par créer votre demande de subvention pour démarrer votre projet
+          </p>
+          <button
+            (click)="startProject()"
+            class="inline-flex items-center gap-2 px-6 py-3 font-medium text-white transition rounded-lg shadow-sm bg-emerald-600 hover:bg-emerald-700"
+          >
+            <svg
+              class="w-5 h-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M12 5v14m-7-7h14"></path>
+            </svg>
+            Créer mon projet
+          </button>
+        </div>
+
+        <!-- Affichage du projet unique -->
+        <div *ngIf="!loadingDemandes() && mesDemandes().length > 0" class="max-w-5xl mx-auto">
+          <!-- Titre et badge -->
+          <div class="flex flex-col items-start justify-between gap-4 mb-6 sm:flex-row">
+            <div class="flex-1">
+              <div class="flex items-center gap-3 mb-2">
+                <h3 class="text-2xl font-bold text-slate-900">
+                  {{ mesDemandes()[0].titre || 'Projet sans titre' }}
+                </h3>
+                <span
+                  class="px-3 py-1.5 text-sm font-semibold rounded-full"
+                  [ngClass]="statutCssClass(mesDemandes()[0])"
+                >
+                  {{ statutLabel(mesDemandes()[0]) }}
+                </span>
+              </div>
+              <p class="text-sm text-slate-500">
+                Code: {{ mesDemandes()[0].code || 'En attente' }}
+              </p>
+            </div>
+            <button
+              (click)="router.navigate(['/form/recap', mesDemandes()[0].id])"
+              class="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition font-medium shadow-sm"
+            >
+              <svg
+                class="w-5 h-5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                ></path>
+              </svg>
+              Voir le récapitulatif complet
+            </button>
+          </div>
+
+          <!-- Informations principales en grille -->
+          <div class="grid gap-6 mb-6 md:grid-cols-2">
+            <!-- Informations du porteur -->
+            <div
+              class="p-6 border border-blue-100 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl"
+            >
+              <div class="flex items-center gap-2 mb-4">
+                <div class="flex items-center justify-center w-10 h-10 bg-blue-100 rounded-lg">
+                  <svg
+                    class="w-5 h-5 text-blue-600"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                </div>
+                <h4 class="text-lg font-semibold text-slate-900">Porteur du projet</h4>
+              </div>
+              <div class="space-y-3">
+                <div>
+                  <p class="mb-1 text-xs text-slate-500">Nom complet</p>
+                  <p class="text-sm font-medium text-slate-900">
+                    {{ user().fullName || 'Non renseigné' }}
+                  </p>
+                </div>
+                <div *ngIf="mesDemandes()[0].soumisPar">
+                  <p class="mb-1 text-xs text-slate-500">Email</p>
+                  <p class="text-sm font-medium text-slate-900">
+                    {{ mesDemandes()[0].soumisPar?.email || 'Non renseigné' }}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Informations de l'organisation -->
+            <div
+              class="p-6 border bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl border-emerald-100"
+            >
+              <div class="flex items-center gap-2 mb-4">
+                <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-emerald-100">
+                  <svg
+                    class="w-5 h-5 text-emerald-600"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                  </svg>
+                </div>
+                <h4 class="text-lg font-semibold text-slate-900">Organisation</h4>
+              </div>
+              <div class="space-y-3">
+                <div *ngIf="mesDemandes()[0].organisation">
+                  <p class="mb-1 text-xs text-slate-500">Nom</p>
+                  <p class="text-sm font-medium text-slate-900">
+                    {{ mesDemandes()[0].organisation?.nom || 'Non renseigné' }}
+                  </p>
+                </div>
+                <div *ngIf="mesDemandes()[0].organisation">
+                  <p class="mb-1 text-xs text-slate-500">Type</p>
+                  <p class="text-sm font-medium text-slate-900">
+                    {{ mesDemandes()[0].organisation?.type || 'Non renseigné' }}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Informations du projet -->
+          <div class="p-6 mb-6 bg-slate-50 rounded-xl">
+            <h4 class="mb-4 text-lg font-semibold text-slate-900">Détails du projet</h4>
+            <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              <!-- Localisation -->
+              <div>
+                <div class="flex items-center gap-2 mb-2 text-slate-500">
+                  <svg
+                    class="w-4 h-4"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                    <circle cx="12" cy="10" r="3"></circle>
+                  </svg>
+                  <span class="text-xs font-medium">Localisation</span>
+                </div>
+                <p class="text-sm font-semibold text-slate-900">
+                  {{ mesDemandes()[0].localisation || 'Non spécifiée' }}
+                </p>
+              </div>
+
+              <!-- Durée -->
+              <div>
+                <div class="flex items-center gap-2 mb-2 text-slate-500">
+                  <svg
+                    class="w-4 h-4"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                  </svg>
+                  <span class="text-xs font-medium">Durée</span>
+                </div>
+                <p class="text-sm font-semibold text-slate-900">
+                  {{ mesDemandes()[0].dureeMois || 0 }} mois
+                </p>
+              </div>
+
+              <!-- Date de début -->
+              <div *ngIf="mesDemandes()[0].dateDebut">
+                <div class="flex items-center gap-2 mb-2 text-slate-500">
+                  <svg
+                    class="w-4 h-4"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+                  <span class="text-xs font-medium">Date de début</span>
+                </div>
+                <p class="text-sm font-semibold text-slate-900">
+                  {{ mesDemandes()[0].dateDebut | date : 'dd/MM/yyyy' }}
+                </p>
+              </div>
+
+              <!-- Date de fin -->
+              <div *ngIf="mesDemandes()[0].dateFin">
+                <div class="flex items-center gap-2 mb-2 text-slate-500">
+                  <svg
+                    class="w-4 h-4"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                    <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"></path>
+                  </svg>
+                  <span class="text-xs font-medium">Date de fin</span>
+                </div>
+                <p class="text-sm font-semibold text-slate-900">
+                  {{ mesDemandes()[0].dateFin | date : 'dd/MM/yyyy' }}
+                </p>
+              </div>
+
+              <!-- Groupe cible -->
+              <div>
+                <div class="flex items-center gap-2 mb-2 text-slate-500">
+                  <svg
+                    class="w-4 h-4"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                  </svg>
+                  <span class="text-xs font-medium">Groupe cible</span>
+                </div>
+                <p class="text-sm font-semibold text-slate-900">
+                  {{ mesDemandes()[0].groupeCible || 'Non spécifié' }}
+                </p>
+              </div>
+
+              <!-- Budget -->
+              <div class="sm:col-span-2 lg:col-span-3">
+                <div class="flex items-center gap-2 mb-2 text-slate-500">
+                  <svg
+                    class="w-4 h-4"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                  </svg>
+                  <span class="text-xs font-medium">Budget du projet</span>
+                </div>
+                <p class="text-xl font-bold text-emerald-600">
+                  {{
+                    getBudgetTotal(mesDemandes()[0]) > 0
+                      ? (getBudgetTotal(mesDemandes()[0]) | currency : 'XAF' : 'symbol' : '1.0-0')
+                      : 'Non spécifié'
+                  }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Historique des modifications -->
+          <div class="p-6 bg-white border border-slate-200 rounded-xl">
+            <h4 class="mb-4 text-lg font-semibold text-slate-900">Historique</h4>
+            <div class="space-y-3">
+              <div class="flex items-center justify-between py-3 border-b border-slate-100">
+                <div class="flex items-center gap-3">
+                  <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <div>
+                    <p class="text-sm font-medium text-slate-900">Projet créé</p>
+                    <p class="text-xs text-slate-500">
+                      {{ mesDemandes()[0].creeLe | date : 'dd/MM/yyyy à HH:mm' }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div class="flex items-center justify-between py-3">
+                <div class="flex items-center gap-3">
+                  <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  <div>
+                    <p class="text-sm font-medium text-slate-900">Dernière modification</p>
+                    <p class="text-xs text-slate-500">
+                      {{ mesDemandes()[0].misAJourLe | date : 'dd/MM/yyyy à HH:mm' }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>

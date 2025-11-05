@@ -1,0 +1,76 @@
+<!-- Fond plein écran -->
+<div class="min-h-screen grid place-items-center bg-[#1f3b52] px-4">
+  <!-- Carte -->
+  <div
+    class="w-full max-w-xl rounded-2xl bg-[#112B3C] text-white p-8 shadow-2xl border border-white/10"
+  >
+    <!-- Logo -->
+    <div class="flex justify-center">
+      <img src="assets/logo.png" alt="FPBG" class="w-auto h-14" />
+    </div>
+
+    <!-- Titre -->
+    <h1 class="mt-4 text-4xl font-bold text-center">Espace Évaluateur</h1>
+    <p class="mt-2 text-sm text-center text-white/70">Connectez-vous pour évaluer les projets</p>
+
+    <!-- Formulaire -->
+    <form (ngSubmit)="submit()" [formGroup]="form" class="mt-6 space-y-4">
+      <!-- Email -->
+      <div>
+        <label class="block mb-1 text-sm">Email</label>
+        <input
+          type="email"
+          formControlName="email"
+          placeholder="votre adresse email"
+          class="w-full rounded-lg bg-[#1f4a63] border border-white/10 text-white placeholder-white/60 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500"
+        />
+        <p
+          class="mt-1 text-xs text-red-400"
+          *ngIf="form.get('email')?.touched && form.get('email')?.invalid"
+        >
+          adresse email invalide
+        </p>
+      </div>
+
+      <!-- Mot de passe + lien oublié -->
+      <div>
+        <div class="flex items-center justify-between">
+          <label class="block mb-1 text-sm">Mot de passe</label>
+          <a routerLink="/forgot-password" class="text-xs text-green-400 hover:text-green-300">
+            Mot de passe oublié ?
+          </a>
+        </div>
+        <input
+          type="password"
+          formControlName="motDePasse"
+          placeholder="votre mot de passe"
+          class="w-full rounded-lg bg-[#1f4a63] border border-white/10 text-white placeholder-white/60 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500"
+        />
+        <p
+          class="mt-1 text-xs text-red-400"
+          *ngIf="form.get('motDePasse')?.touched && form.get('motDePasse')?.invalid"
+        >
+          6 caractères minimum
+        </p>
+      </div>
+
+      <!-- Bouton -->
+      <button
+        class="w-full py-3 font-semibold bg-green-600 rounded-lg hover:bg-green-700 disabled:opacity-60"
+        [disabled]="loading || form.invalid"
+      >
+        {{ loading ? 'Connexion...' : 'Se connecter' }}
+      </button>
+    </form>
+
+    <!-- Lien admin -->
+    <div class="mt-6 text-center">
+      <p class="text-sm text-white/70">
+        Vous êtes administrateur ?
+        <a routerLink="/admin/login" class="text-green-400 hover:text-green-300 font-medium">
+          Connexion admin
+        </a>
+      </p>
+    </div>
+  </div>
+</div>

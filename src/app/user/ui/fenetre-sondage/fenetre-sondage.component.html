@@ -1,0 +1,38 @@
+<div *ngIf="visible" class="fixed inset-0 z-[1000] bg-black/50 flex items-center justify-center" (click)="tenterFermer()">
+  <div class="bg-white w-full max-w-xl mx-4 rounded-lg shadow-lg" (click)="interrompre($event)">
+    <div class="px-5 py-4 border-b">
+      <h3 class="text-lg font-semibold">Comment avez-vous découvert notre appel à projets ?</h3>
+      <p class="text-sm text-slate-600 mt-1">Votre réponse nous aide à améliorer nos canaux d’information.</p>
+    </div>
+
+    <div class="px-5 py-4 space-y-3 max-h-[70vh] overflow-y-auto">
+      <div class="grid grid-cols-1 gap-2">
+        <label *ngFor="let c of canaux" class="flex items-center gap-2">
+          <input type="radio" name="canal" [value]="c.cle" [(ngModel)]="canalSelectionne" />
+          <span>{{ c.libelle }}</span>
+        </label>
+      </div>
+
+      <div *ngIf="autreCoche">
+        <label class="block text-sm font-medium mb-1">Précisez</label>
+        <input class="w-full border rounded px-3 py-2" [(ngModel)]="texteAutre" maxlength="255" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium mb-1">Commentaire (facultatif)</label>
+        <textarea class="w-full border rounded px-3 py-2" rows="3" [(ngModel)]="commentaire" maxlength="1000"></textarea>
+      </div>
+
+      <p *ngIf="erreur()" class="text-red-600 text-sm">{{ erreur() }}</p>
+    </div>
+
+    <div class="px-5 py-4 border-t flex items-center justify-end gap-3">
+      <button *ngIf="!obligatoire" class="px-3 py-2 rounded border" (click)="tenterFermer()">Plus tard</button>
+      <button class="px-4 py-2 rounded bg-emerald-600 text-white disabled:opacity-60"
+              [disabled]="!canalSelectionne || envoiEnCours()"
+              (click)="soumettre()">
+        {{ envoiEnCours() ? 'Envoi…' : 'Valider et continuer' }}
+      </button>
+    </div>
+  </div>
+</div>

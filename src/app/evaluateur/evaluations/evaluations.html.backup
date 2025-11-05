@@ -1,0 +1,318 @@
+<!-- EVALUATEUR EVALUATIONS — FPBG -->
+<div class="w-full min-h-screen bg-gray-50">
+  <!-- Message d'erreur -->
+  @if (error()) {
+    <div class="bg-red-50 border border-red-200 rounded-lg p-4 m-4">
+      <div class="flex items-start">
+        <svg class="w-5 h-5 text-red-600 mt-0.5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <div>
+          <h3 class="font-medium text-red-800">Erreur</h3>
+          <p class="text-sm text-red-700 mt-1">{{ error() }}</p>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Loading -->
+  @if (loading()) {
+    <div class="flex items-center justify-center py-12">
+      <svg class="w-10 h-10 text-green-600 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>
+    </div>
+  }
+
+  <!-- Header avec boutons -->
+  <div *ngIf="!loading()" class="sticky top-0 z-30 bg-white border-b shadow-sm">
+    <div class="flex items-center justify-between px-4 py-3">
+      <button
+        type="button"
+        class="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50"
+        (click)="retour()"
+      >
+        Retour
+      </button>
+
+      <!-- Temps restant -->
+      <div class="flex items-center gap-4">
+        <div class="flex items-center gap-2 px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg">
+          <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <span class="text-sm font-medium text-blue-900">{{ tempsRestant() }}</span>
+        </div>
+
+        <!-- Statut de la demande d'extension -->
+        <div *ngIf="demandeExtension()" class="flex items-center gap-2 px-3 py-2 rounded-lg"
+             [class.bg-amber-50]="demandeExtension()?.statut === 'EN_ATTENTE'"
+             [class.border-amber-200]="demandeExtension()?.statut === 'EN_ATTENTE'"
+             [class.bg-green-50]="demandeExtension()?.statut === 'ACCEPTEE'"
+             [class.border-green-200]="demandeExtension()?.statut === 'ACCEPTEE'"
+             [class.bg-red-50]="demandeExtension()?.statut === 'REFUSEE'"
+             [class.border-red-200]="demandeExtension()?.statut === 'REFUSEE'"
+             class="border">
+          <span class="text-xs font-medium"
+                [class.text-amber-900]="demandeExtension()?.statut === 'EN_ATTENTE'"
+                [class.text-green-900]="demandeExtension()?.statut === 'ACCEPTEE'"
+                [class.text-red-900]="demandeExtension()?.statut === 'REFUSEE'">
+            Extension: {{ demandeExtension()?.statut === 'EN_ATTENTE' ? 'En attente' : demandeExtension()?.statut === 'ACCEPTEE' ? 'Acceptée (+1h)' : 'Refusée' }}
+          </span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button
+          type="button"
+          class="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          (click)="sauvegarder()"
+          [disabled]="loading() || criteres().length === 0"
+        >
+          {{ loading() ? 'Sauvegarde...' : 'Sauvegarder' }}
+        </button>
+        <button
+          type="button"
+          class="px-4 py-2 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          (click)="ouvrirModalSoumission()"
+          [disabled]="loading() || criteres().length === 0"
+        >
+          Valider
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!loading()" class="grid gap-6 lg:grid-cols-[1fr,400px] p-4 lg:p-6">
+    <!-- ===== CONTENU DU PROJET (Gauche) ===== -->
+    <div class="bg-white border rounded-xl p-6 overflow-y-auto max-h-[calc(100vh-120px)]">
+      <h2 class="text-2xl font-bold text-slate-900 mb-6">Proposition de projet</h2>
+
+      <div *ngIf="projet()" class="space-y-6">
+        <!-- Titre -->
+        <div>
+          <h3 class="text-sm font-semibold text-slate-700 mb-2">Titre :</h3>
+          <p class="text-slate-900">{{ projet()?.titre }}</p>
+        </div>
+
+        <!-- Localisation -->
+        <div>
+          <h3 class="text-sm font-semibold text-slate-700 mb-2">Localisation :</h3>
+          <p class="text-slate-900">{{ projet()?.localisation }}</p>
+        </div>
+
+        <!-- Groupe cible -->
+        <div>
+          <h3 class="text-sm font-semibold text-slate-700 mb-2">Groupe cible :</h3>
+          <p class="text-slate-900">{{ projet()?.groupeCible }}</p>
+        </div>
+
+        <!-- Contexte et justification -->
+        <div>
+          <h3 class="text-sm font-semibold text-slate-700 mb-2">Contexte et justification :</h3>
+          <p class="text-slate-900 whitespace-pre-line">{{ projet()?.justificationContexte }}</p>
+        </div>
+
+        <!-- Objectifs -->
+        <div>
+          <h3 class="text-sm font-semibold text-slate-700 mb-2">Objectifs :</h3>
+          <p class="text-slate-900 whitespace-pre-line">{{ projet()?.objectifs }}</p>
+        </div>
+
+        <!-- Résultats attendus -->
+        <div>
+          <h3 class="text-sm font-semibold text-slate-700 mb-2">Résultats attendus :</h3>
+          <p class="text-slate-900 whitespace-pre-line">{{ projet()?.resultatsAttendus }}</p>
+        </div>
+
+        <!-- Durée -->
+        <div>
+          <h3 class="text-sm font-semibold text-slate-700 mb-2">Durée :</h3>
+          <p class="text-slate-900">{{ projet()?.dureeMois }} mois</p>
+        </div>
+
+        <!-- Budget total -->
+        <div>
+          <h3 class="text-sm font-semibold text-slate-700 mb-2">Budget total :</h3>
+          <p class="text-slate-900">{{ formatMontant(calculerBudgetTotal(projet())) }} FCFA</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== CRITÈRES D'ÉVALUATION (Droite - Fixed) ===== -->
+    <div
+      class="bg-white border rounded-xl p-6 sticky top-24 h-fit max-h-[calc(100vh-120px)] overflow-y-auto"
+    >
+      <h2 class="text-xl font-bold text-slate-900 mb-4">Critères</h2>
+
+      <!-- Navigation entre critères -->
+      <div class="mb-6">
+        <div class="flex items-center gap-2 mb-3">
+          <button
+            *ngFor="let critere of criteres(); let i = index"
+            type="button"
+            class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition-colors"
+            [class.bg-green-600]="i === critereActifIndex()"
+            [class.text-white]="i === critereActifIndex()"
+            [class.bg-slate-200]="i !== critereActifIndex()"
+            [class.text-slate-700]="i !== critereActifIndex()"
+            (click)="allerAuCritere(i)"
+          >
+            {{ i + 1 }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Critère actif -->
+      <div *ngIf="critereActif()" class="space-y-4">
+        <div>
+          <h3 class="text-lg font-semibold text-slate-900 mb-2">
+            {{ critereActif()?.critere?.libelle }}
+          </h3>
+          <p class="text-sm text-slate-600 mb-4">Poids: {{ critereActif()?.critere?.poids }}</p>
+        </div>
+
+        <!-- Input de note (0-100) -->
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-2"> Note (%)</label>
+          <input
+            type="number"
+            [value]="critereActif()?.note || 0"
+            (input)="critereActif()?.critere?.id && updateNote(critereActif()!.critere.id, +$any($event.target).value)"
+            max="100"
+            min="0"
+            class="w-full px-4 py-3 text-2xl font-bold text-center border-2 border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          />
+          <p class="text-xs text-slate-500 text-center mt-1">
+            Sur 100% (note pondérée par le poids du critère)
+          </p>
+        </div>
+
+        <!-- Commentaire -->
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-2">
+            Un commentaire ? n'hésitez pas
+          </label>
+          <textarea
+            [(ngModel)]="commentaire"
+            rows="4"
+            class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            placeholder="Votre commentaire"
+          ></textarea>
+        </div>
+
+        <!-- Navigation -->
+        <div class="flex items-center justify-between pt-4">
+          <button
+            type="button"
+            class="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            (click)="precedent()"
+            [disabled]="critereActifIndex() === 0"
+          >
+            ← Précédent
+          </button>
+          <button
+            type="button"
+            class="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            (click)="suivant()"
+            [disabled]="critereActifIndex() === criteres().length - 1"
+          >
+            Suivant →
+          </button>
+        </div>
+      </div>
+
+      <!-- Score total -->
+      <div class="mt-6 pt-6 border-t">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-sm font-medium text-slate-700">Score total</span>
+          <span class="text-2xl font-bold text-green-600">
+            {{ totalPoints() }} / {{ totalPointsMax() }}
+          </span>
+        </div>
+        <div class="text-center mt-2">
+          <span class="text-xs text-slate-500">{{ scorePourcentage() }}%</span>
+        </div>
+      </div>
+
+      <!-- Bouton demander extension -->
+      <div class="mt-6">
+        <button
+          type="button"
+          class="w-full px-4 py-2 text-sm font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100"
+          (click)="ouvrirModalExtension()"
+        >
+          Demander une extension
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de soumission -->
+<div
+  *ngIf="showSubmitModal()"
+  class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+  (click)="fermerModalSoumission()"
+>
+  <div
+    class="bg-white rounded-xl shadow-xl max-w-md w-full mx-4 p-6"
+    (click)="$event.stopPropagation()"
+  >
+    <h3 class="text-xl font-bold text-slate-900 mb-4">Soumission évaluation</h3>
+    <p class="text-slate-600 mb-6">Êtes-vous sûr de vouloir soumettre l'évaluation?</p>
+    <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-6">
+      <p class="text-sm text-amber-800">⚠️ Veuillez noter que cette action est irreversible</p>
+    </div>
+    <div class="flex items-center justify-end gap-3">
+      <button
+        type="button"
+        class="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50"
+        (click)="fermerModalSoumission()"
+      >
+        Annuler
+      </button>
+      <button
+        type="button"
+        class="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700"
+        (click)="soumettre()"
+      >
+        Soumettre
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de demande d'extension -->
+<div
+  *ngIf="showExtensionModal()"
+  class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+  (click)="fermerModalExtension()"
+>
+  <div
+    class="bg-white rounded-xl shadow-xl max-w-md w-full mx-4 p-6"
+    (click)="$event.stopPropagation()"
+  >
+    <h3 class="text-xl font-bold text-slate-900 mb-4">Demande d'extension</h3>
+    <p class="text-slate-600 mb-6">
+      Voulez - vous demander une extension d'une heure pour cette session ?
+    </p>
+    <div class="flex items-center justify-end gap-3">
+      <button
+        type="button"
+        class="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50"
+        (click)="fermerModalExtension()"
+      >
+        Annuler
+      </button>
+      <button
+        type="button"
+        class="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700"
+        (click)="demanderExtension()"
+      >
+        Demander
+      </button>
+    </div>
+  </div>
+</div>

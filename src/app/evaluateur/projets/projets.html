@@ -1,0 +1,272 @@
+<!-- EVALUATEUR PROJETS — FPBG -->
+<div class="w-full">
+  <div class="grid gap-6 md:grid-cols-[280px,1fr]">
+    <!-- ===== SIDEBAR ===== -->
+    <aside
+      class="hidden text-xs font-medium bg-white border shadow-sm md:block md:sticky md:top-0 md:self-start md:min-h-screen text-slate-600"
+    >
+      <div class="p-6 border-b">
+        <p class="text-xl font-bold tracking-wider text-emerald-400 uppercase">
+          Espace Évaluateur
+        </p>
+
+        <div class="grid grid-cols-2 gap-2 mt-4 text-center">
+          <div class="p-3 rounded bg-slate-100">
+            <p class="text-[11px] text-green-400">Projets</p>
+            <p class="text-lg font-semibold text-slate-600">{{ totalProjets() }}</p>
+          </div>
+          <div class="p-3 rounded bg-slate-100">
+            <p class="text-[11px] text-green-400">Terminés</p>
+            <p class="text-lg font-semibold text-slate-600">{{ projetsTermines() }}</p>
+          </div>
+        </div>
+      </div>
+
+      <nav class="p-2 text-sm">
+        <div class="px-3 py-2 text-slate-600">Navigation</div>
+
+        <a
+          routerLink="/evaluateur/dashboard"
+          routerLinkActive="bg-green-500/10 border-l-4 border-green-500"
+          class="block px-3 py-2 cursor-pointer hover:bg-green-500/10 hover:border-l-4 hover:border-green-500"
+        >
+          Vue d'ensemble
+        </a>
+
+        <a
+          routerLink="/evaluateur/projets"
+          routerLinkActive="bg-green-500/10 border-l-4 border-green-500"
+          class="block px-3 py-2 cursor-pointer hover:bg-green-500/10 hover:border-l-4 hover:border-green-500"
+        >
+          Projets
+        </a>
+
+        <a
+          routerLink="/evaluateur/evaluations"
+          routerLinkActive="bg-green-500/10 border-l-4 border-green-500"
+          class="block px-3 py-2 cursor-pointer hover:bg-green-500/10 hover:border-l-4 hover:border-green-500"
+        >
+          Évaluations
+        </a>
+
+        <a
+          routerLink="/evaluateur/aide-support"
+          routerLinkActive="bg-green-500/10 border-l-4 border-green-500"
+          class="block px-3 py-2 cursor-pointer hover:bg-green-500/10 hover:border-l-4 hover:border-green-500"
+        >
+          Aide & support
+        </a>
+      </nav>
+
+      <div class="p-2 mt-3 border-t">
+        <button
+          type="button"
+          class="w-full px-3 py-2 text-left hover:bg-green-500/10"
+          (click)="logout()"
+        >
+          Se déconnecter
+        </button>
+      </div>
+    </aside>
+
+    <!-- ===== MAIN ===== -->
+    <section class="min-h-screen px-4 md:pr-6">
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div class="min-w-0 flex-1">
+          <h1 class="pt-3 text-2xl sm:text-3xl"><strong>Projets</strong></h1>
+          <p class="pt-3 text-sm sm:text-base text-slate-600">
+            Suivi des projets à évaluer
+          </p>
+        </div>
+      </div>
+
+      <!-- Stats cartes -->
+      <div class="grid gap-3 sm:gap-4 mt-6 grid-cols-1 sm:grid-cols-3">
+        <div class="p-4 sm:p-5 bg-white border rounded-xl flex items-center justify-between">
+          <div>
+            <p class="text-xs sm:text-sm text-slate-600 truncate">A évaluer</p>
+            <p class="mt-1 text-xl sm:text-2xl font-semibold text-indigo-600">{{ projetsAEvaluer() }}</p>
+          </div>
+        </div>
+
+        <div class="p-4 sm:p-5 bg-white border rounded-xl flex items-center justify-between">
+          <div>
+            <p class="text-xs sm:text-sm text-slate-600 truncate">En cours</p>
+            <p class="mt-1 text-xl sm:text-2xl font-semibold text-amber-600">{{ projetsEnCours() }}</p>
+          </div>
+        </div>
+
+        <div class="p-4 sm:p-5 bg-white border rounded-xl flex items-center justify-between">
+          <div>
+            <p class="text-xs sm:text-sm text-slate-600 truncate">Terminés</p>
+            <p class="mt-1 text-xl sm:text-2xl font-semibold text-emerald-600">{{ projetsTermines() }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filtre appel d'offre -->
+      <div class="mt-6">
+        <label class="block text-sm font-medium text-slate-700 mb-2">
+          Sélectionner un appel d'offre
+        </label>
+        <select class="w-full sm:w-64 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+          <option value="">Sélectionner un appel d'offre</option>
+          <option value="1">Appel d'offre 2026</option>
+        </select>
+      </div>
+
+      <!-- Message d'instruction -->
+      <div class="mt-4 text-sm text-slate-600">
+        <p>Veuillez cliquer sur "Démarrer" pour commencer l'évaluation d'un projet</p>
+      </div>
+
+      <!-- Error Message -->
+      <div *ngIf="error()" class="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+        <p class="text-sm text-red-800">{{ error() }}</p>
+      </div>
+
+      <!-- Loading -->
+      <div *ngIf="loading()" class="flex items-center justify-center py-12 mt-8">
+        <svg
+          class="w-10 h-10 text-green-600 animate-spin"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            class="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            stroke-width="4"
+          ></circle>
+          <path
+            class="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+          ></path>
+        </svg>
+      </div>
+
+      <!-- ===== Tableau (Desktop) ===== -->
+      <div
+        *ngIf="!loading()"
+        class="hidden mt-4 bg-white border rounded-xl sm:block overflow-hidden"
+      >
+        <div class="relative max-h-[70vh] overflow-auto">
+          <table class="w-full border-collapse table-fixed">
+            <thead class="sticky top-0 z-20 shadow-sm bg-slate-50">
+              <tr class="text-xs font-medium tracking-wide text-left uppercase text-slate-600">
+                <th class="px-3 py-3 w-[15%]">Identifiant</th>
+                <th class="px-3 py-3 w-[30%]">Titre du projet</th>
+                <th class="px-3 py-3 w-[15%]">Budget CFA</th>
+                <th class="px-3 py-3 w-[15%]">Type de subvention</th>
+                <th class="px-3 py-3 w-[10%]">Date</th>
+                <th class="px-3 py-3 w-[15%] text-right">Actions</th>
+              </tr>
+            </thead>
+
+            <tbody class="divide-y">
+              <tr *ngFor="let projet of filtered(); trackBy: trackById" class="hover:bg-slate-50">
+                <td class="px-3 py-4 text-sm text-slate-900">{{ projet.identifiant }}</td>
+                <td class="px-3 py-4">
+                  <p class="font-medium text-slate-900 truncate" [title]="projet.titre">
+                    {{ projet.titre }}
+                  </p>
+                </td>
+                <td class="px-3 py-4 text-sm text-slate-900">{{ formatMontant(projet.budget) }}</td>
+                <td class="px-3 py-4 text-sm text-slate-600">{{ projet.typeSubvention }}</td>
+                <td class="px-3 py-4 text-xs text-slate-600">{{ projet.date }}</td>
+                <td class="px-3 py-4">
+                  <div class="flex items-center justify-end gap-2">
+                    <button
+                      *ngIf="projet.statut === 'A évaluer'"
+                      type="button"
+                      class="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs hover:bg-emerald-700 whitespace-nowrap"
+                      (click)="demarrerEvaluation(projet)"
+                    >
+                      Démarrer
+                    </button>
+                    <button
+                      *ngIf="projet.statut === 'En cours'"
+                      type="button"
+                      class="px-3 py-1.5 rounded-lg bg-amber-600 text-white text-xs hover:bg-amber-700 whitespace-nowrap"
+                      (click)="continuerEvaluation(projet)"
+                    >
+                      Continuer
+                    </button>
+                    <button
+                      *ngIf="projet.statut === 'Terminé'"
+                      type="button"
+                      class="px-3 py-1.5 rounded-lg bg-green-100 text-green-800 text-xs hover:bg-green-200 whitespace-nowrap"
+                      (click)="voirEvaluation(projet)"
+                    >
+                      Voir
+                    </button>
+                  </div>
+                </td>
+              </tr>
+
+              <tr *ngIf="filtered().length === 0">
+                <td colspan="6" class="px-4 py-10 text-center text-slate-500">
+                  <p>Aucun projet trouvé</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ===== Liste Mobile ===== -->
+      <div *ngIf="!loading()" class="grid gap-3 mt-4 sm:hidden">
+        <div
+          *ngFor="let projet of filtered(); trackBy: trackById"
+          class="p-4 bg-white border rounded-xl"
+        >
+          <div class="flex items-start justify-between gap-3 mb-2">
+            <div class="flex-1 min-w-0">
+              <p class="text-xs text-slate-500 mb-1">{{ projet.identifiant }}</p>
+              <h3 class="font-semibold text-slate-900 line-clamp-2 break-words">
+                {{ projet.titre }}
+              </h3>
+              <p class="mt-1 text-sm text-slate-600">{{ formatMontant(projet.budget) }} FCFA</p>
+              <p class="text-xs text-slate-500">{{ projet.typeSubvention }}</p>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-end gap-2 mt-3">
+            <button
+              *ngIf="projet.statut === 'A évaluer'"
+              type="button"
+              class="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs hover:bg-emerald-700"
+              (click)="demarrerEvaluation(projet)"
+            >
+              Démarrer
+            </button>
+            <button
+              *ngIf="projet.statut === 'En cours'"
+              type="button"
+              class="px-3 py-1.5 rounded-lg bg-amber-600 text-white text-xs hover:bg-amber-700"
+              (click)="continuerEvaluation(projet)"
+            >
+              Continuer
+            </button>
+            <button
+              *ngIf="projet.statut === 'Terminé'"
+              type="button"
+              class="px-3 py-1.5 rounded-lg bg-green-100 text-green-800 text-xs hover:bg-green-200"
+              (click)="voirEvaluation(projet)"
+            >
+              Voir
+            </button>
+          </div>
+        </div>
+
+        <div *ngIf="filtered().length === 0" class="p-8 text-center bg-white border rounded-xl">
+          <p class="text-sm text-slate-500">Aucun projet trouvé</p>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>

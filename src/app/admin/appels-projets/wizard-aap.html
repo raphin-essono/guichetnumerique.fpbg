@@ -1,0 +1,965 @@
+<!-- Container principal -->
+<div class="min-h-screen bg-slate-50 py-8">
+  <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+    <!-- En-tête -->
+    <div class="mb-8">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-bold text-slate-900">
+            {{ isEditMode() ? 'Modifier' : 'Créer' }} un Appel à Projets
+          </h1>
+          <p class="mt-1 text-sm text-slate-600">
+            {{
+              isEditMode()
+                ? "Modifiez les informations de l'AAP"
+                : 'Complétez les 7 étapes pour créer votre AAP'
+            }}
+          </p>
+        </div>
+        <button
+          (click)="cancel()"
+          class="px-4 py-2 text-slate-700 bg-white border rounded-lg hover:bg-slate-50 transition-colors"
+        >
+          Annuler
+        </button>
+      </div>
+    </div>
+
+    <!-- Stepper de navigation -->
+    <div class="mb-8 bg-white rounded-lg border shadow-sm p-6">
+      <div class="flex items-center justify-between">
+        <div *ngFor="let step of [1, 2, 3, 4, 5, 6, 7]" class="flex-1 flex items-center">
+          <!-- Cercle d'étape -->
+          <div class="flex flex-col items-center flex-1">
+            <button
+              (click)="goToStep(step)"
+              [class.bg-green-600]="currentStep() >= step"
+              [class.text-white]="currentStep() >= step"
+              [class.bg-slate-200]="currentStep() < step"
+              [class.text-slate-500]="currentStep() < step"
+              class="w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-colors"
+            >
+              {{ step }}
+            </button>
+            <span class="mt-2 text-xs text-slate-600 text-center hidden sm:block">
+              <ng-container [ngSwitch]="step">
+                <span *ngSwitchCase="1">Identité</span>
+                <span *ngSwitchCase="2">Jalons</span>
+                <span *ngSwitchCase="3">Subventions</span>
+                <span *ngSwitchCase="4">Thématiques</span>
+                <span *ngSwitchCase="5">Règles</span>
+                <span *ngSwitchCase="6">Éligibilités</span>
+                <span *ngSwitchCase="7">Récap</span>
+              </ng-container>
+            </span>
+          </div>
+          <!-- Ligne de séparation -->
+          <div
+            *ngIf="step < 7"
+            class="flex-1 h-0.5 mx-2"
+            [class.bg-green-600]="currentStep() > step"
+            [class.bg-slate-200]="currentStep() <= step"
+          ></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Message d'erreur global -->
+    <div *ngIf="error()" class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+      <div class="flex items-start">
+        <svg
+          class="w-5 h-5 text-red-600 mt-0.5 mr-3"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+          ></path>
+        </svg>
+        <div>
+          <h3 class="font-medium text-red-800">Erreur</h3>
+          <p class="text-sm text-red-700 mt-1">{{ error() }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contenu des étapes -->
+    <div class="bg-white rounded-lg border shadow-sm p-6 sm:p-8 min-h-[500px]">
+      <!-- ========== ÉTAPE 1: IDENTITÉ ========== -->
+      <div *ngIf="currentStep() === 1">
+        <h2 class="text-xl font-bold text-slate-900 mb-6">Étape 1 : Identité</h2>
+
+        <div class="space-y-6">
+          <!-- Code -->
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">Code *</label>
+            <input
+              type="text"
+              [(ngModel)]="code"
+              placeholder="Ex: AAP-OBL-2025"
+              class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+          </div>
+
+          <!-- Titre -->
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">Titre *</label>
+            <input
+              type="text"
+              [(ngModel)]="titre"
+              placeholder="Ex: Conservation marine et littorale"
+              class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+          </div>
+
+          <!-- Résumé -->
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2"
+              >Résumé (court texte pour la card)</label
+            >
+            <textarea
+              [(ngModel)]="resume"
+              rows="3"
+              placeholder="Description courte pour l'affichage en carte"
+              class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            ></textarea>
+          </div>
+
+          <!-- Description longue -->
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">Description longue</label>
+            <textarea
+              [(ngModel)]="descriptionLongue"
+              rows="4"
+              placeholder="Description complète de l'appel à projets"
+              class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            ></textarea>
+          </div>
+
+          <!-- Contexte -->
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">Contexte</label>
+            <textarea
+              [(ngModel)]="contexte"
+              rows="4"
+              placeholder="Contexte de l'appel à projets"
+              class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            ></textarea>
+          </div>
+
+          <!-- Objectif -->
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">Objectif</label>
+            <textarea
+              [(ngModel)]="objectif"
+              rows="4"
+              placeholder="Objectifs visés par l'appel à projets"
+              class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            ></textarea>
+          </div>
+
+          <!-- Email contact -->
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">Email de contact</label>
+            <input
+              type="email"
+              [(ngModel)]="contactEmail"
+              placeholder="contact@fpbg.ga"
+              class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+          </div>
+
+          <!-- Image de couverture -->
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2"
+              >Image de couverture</label
+            >
+            <div class="space-y-3">
+              <!-- Input pour télécharger une image -->
+              <div>
+                <label class="block text-sm text-slate-600 mb-1">Télécharger une image</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
+                />
+                <p class="mt-1 text-xs text-slate-500">Formats acceptés: JPG, PNG, WebP (max 2MB)</p>
+              </div>
+
+              <!-- OU input URL -->
+              <div class="relative">
+                <div class="absolute inset-0 flex items-center">
+                  <div class="w-full border-t border-slate-300"></div>
+                </div>
+                <div class="relative flex justify-center text-sm">
+                  <span class="px-2 bg-white text-slate-500">OU</span>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-sm text-slate-600 mb-1">Lien URL de l'image</label>
+                <input
+                  type="url"
+                  [(ngModel)]="imageCouvertureUrl"
+                  placeholder="https://..."
+                  class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Devise & Fuseau -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-2">Devise</label>
+              <select
+                [(ngModel)]="devise"
+                class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+              >
+                <option value="XAF">XAF (Franc CFA)</option>
+                <option value="EUR">EUR (Euro)</option>
+                <option value="USD">USD (Dollar)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-2">Fuseau horaire</label>
+              <select
+                [(ngModel)]="fuseau"
+                class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+              >
+                <option value="Africa/Libreville">Africa/Libreville</option>
+                <option value="UTC">UTC</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== ÉTAPE 2: JALONS ========== -->
+      <div *ngIf="currentStep() === 2">
+        <h2 class="text-xl font-bold text-slate-900 mb-6">Étape 2 : Jalons</h2>
+
+        <div class="space-y-6">
+          <!-- Date d'ouverture -->
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">Date d'ouverture *</label>
+            <input
+              type="date"
+              [ngModel]="dateOuverture()"
+              (ngModelChange)="dateOuverture.set($event)"
+              class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+          </div>
+
+          <!-- Date de clôture -->
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">Date de clôture *</label>
+            <input
+              type="date"
+              [ngModel]="dateCloture()"
+              (ngModelChange)="dateCloture.set($event)"
+              class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+          </div>
+
+          <!-- Validation -->
+          <div
+            *ngIf="dateOuverture() && dateCloture() && !step2Valid()"
+            class="bg-red-50 border border-red-200 rounded-lg p-4"
+          >
+            <p class="text-sm text-red-700">
+              La date de clôture doit être postérieure à la date d'ouverture.
+            </p>
+          </div>
+
+          <!-- Options de publication -->
+          <div class="space-y-3">
+            <div class="flex items-start">
+              <input
+                type="checkbox"
+                id="publierCatalogue"
+                [(ngModel)]="publierDansCatalogue"
+                class="mt-1 h-4 w-4 text-green-600 focus:ring-green-500 border-slate-300 rounded"
+              />
+              <label for="publierCatalogue" class="ml-3">
+                <span class="font-medium text-slate-700">Publier dans le catalogue</span>
+                <p class="text-sm text-slate-500">
+                  L'AAP sera visible publiquement dans le catalogue
+                </p>
+              </label>
+            </div>
+
+            <div class="flex items-start">
+              <input
+                type="checkbox"
+                id="publierApresCloture"
+                [(ngModel)]="publierApresCloture"
+                class="mt-1 h-4 w-4 text-green-600 focus:ring-green-500 border-slate-300 rounded"
+              />
+              <label for="publierApresCloture" class="ml-3">
+                <span class="font-medium text-slate-700">Publier après clôture</span>
+                <p class="text-sm text-slate-500">
+                  Garder l'AAP visible même après la date de clôture
+                </p>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== ÉTAPE 3: SUBVENTIONS ========== -->
+      <div *ngIf="currentStep() === 3">
+        <h2 class="text-xl font-bold text-slate-900 mb-6">Étape 3 : Subventions (Paliers)</h2>
+
+        <!-- Boutons pour ajouter des paliers -->
+        <div class="mb-6 flex gap-3">
+          <button
+            (click)="addPalier('PETITE')"
+            [disabled]="hasPalierType('PETITE')"
+            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors"
+          >
+            + Ajouter Petite Subvention
+          </button>
+          <button
+            (click)="addPalier('MOYENNE')"
+            [disabled]="hasPalierType('MOYENNE')"
+            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors"
+          >
+            + Ajouter Subvention Moyenne
+          </button>
+        </div>
+
+        <!-- Liste des paliers -->
+        <div class="space-y-6">
+          <div
+            *ngFor="let palier of paliers(); let i = index"
+            class="border rounded-lg p-6 bg-slate-50"
+          >
+            <div class="flex items-center justify-between mb-4">
+              <h3
+                class="text-lg font-semibold"
+                [class.text-green-700]="palier.type === 'PETITE'"
+                [class.text-blue-700]="palier.type === 'MOYENNE'"
+              >
+                {{ palier.type === 'PETITE' ? 'Petite Subvention' : 'Subvention Moyenne' }}
+              </h3>
+              <button
+                (click)="removePalier(i)"
+                class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                  ></path>
+                </svg>
+              </button>
+            </div>
+
+            <div class="space-y-4">
+              <!-- Libellé affiché -->
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Libellé affiché</label>
+                <input
+                  type="text"
+                  [(ngModel)]="palier.libelleAffiche"
+                  class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+
+              <!-- Montants -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1"
+                    >Montant minimum ({{ devise() }})</label
+                  >
+                  <input
+                    type="number"
+                    [(ngModel)]="palier.montantMin"
+                    class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1"
+                    >Montant maximum ({{ devise() }})</label
+                  >
+                  <input
+                    type="number"
+                    [(ngModel)]="palier.montantMax"
+                    class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  />
+                </div>
+              </div>
+
+              <!-- Durée et deadline -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1"
+                    >Durée max (mois)</label
+                  >
+                  <input
+                    type="number"
+                    [(ngModel)]="palier.dureeMaxEnMois"
+                    class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1"
+                    >Deadline Note Conceptuelle *</label
+                  >
+                  <input
+                    type="date"
+                    [(ngModel)]="palier.dateLimiteNC"
+                    class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  />
+                </div>
+              </div>
+
+              <!-- Étapes du cycle -->
+              <div>
+                <div class="flex items-center justify-between mb-3">
+                  <label class="text-sm font-medium text-slate-700">Étapes du cycle</label>
+                  <button
+                    (click)="addEtapeToPalier(i)"
+                    class="px-3 py-1.5 text-sm bg-slate-600 text-white rounded hover:bg-slate-700 transition-colors"
+                  >
+                    + Ajouter étape
+                  </button>
+                </div>
+
+                <div class="space-y-3">
+                  <div
+                    *ngFor="let etape of palier.etapes; let j = index"
+                    class="flex gap-3 items-start"
+                  >
+                    <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <input
+                        type="text"
+                        [(ngModel)]="etape.libelle"
+                        placeholder="Nom de l'étape"
+                        class="px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                      />
+                      <input
+                        type="text"
+                        [(ngModel)]="etape.libelleDates"
+                        placeholder="Dates (ex: 15 nov - 23 nov)"
+                        class="px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                      />
+                    </div>
+                    <button
+                      (click)="removeEtapeFromPalier(i, j)"
+                      class="p-2 text-red-600 hover:bg-red-50 rounded transition-colors"
+                    >
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M6 18L18 6M6 6l12 12"
+                        ></path>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="paliers().length === 0" class="text-center py-12 text-slate-500">
+            Aucun palier de subvention. Ajoutez-en au moins un pour continuer.
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== ÉTAPE 4: THÉMATIQUES ========== -->
+      <div *ngIf="currentStep() === 4">
+        <h2 class="text-xl font-bold text-slate-900 mb-6">Étape 4 : Thématiques par type de subvention</h2>
+
+        <!-- Message si aucun palier -->
+        <div *ngIf="paliers().length === 0" class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+          <p class="text-sm text-yellow-800">
+            ⚠️ Vous devez d'abord créer des paliers de subventions à l'étape 3 avant d'ajouter des thématiques.
+          </p>
+        </div>
+
+        <!-- Liste des paliers avec leurs thématiques -->
+        <div *ngIf="paliers().length > 0" class="space-y-8">
+          <div *ngFor="let palier of paliers(); let palierIndex = index" class="border-2 border-green-200 rounded-lg p-6 bg-white">
+            <!-- En-tête du palier -->
+            <div class="flex items-center justify-between mb-4 pb-4 border-b border-green-100">
+              <div>
+                <h3 class="text-lg font-bold text-green-700">{{ palier.libelleAffiche }}</h3>
+                <p class="text-sm text-slate-600">{{ palier.type === 'PETITE' ? 'Petite subvention' : 'Moyenne subvention' }}</p>
+              </div>
+              <button
+                (click)="addThematiqueForPalier(palierIndex)"
+                class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
+              >
+                + Ajouter thématique
+              </button>
+            </div>
+
+            <!-- Thématiques de ce palier -->
+            <div class="space-y-4">
+              <div
+                *ngFor="let them of getThematiquesForPalier(palierIndex); let themIndex = index"
+                class="border border-slate-200 rounded-lg p-4 bg-slate-50"
+              >
+                <div class="flex items-center justify-between mb-3">
+                  <h4 class="text-base font-semibold text-slate-900">Thématique {{ themIndex + 1 }}</h4>
+                  <button
+                    (click)="removeThematiqueForPalier(palierIndex, themIndex)"
+                    class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      ></path>
+                    </svg>
+                  </button>
+                </div>
+
+                <div class="space-y-3">
+                  <!-- Titre -->
+                  <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Titre</label>
+                    <input
+                      type="text"
+                      [(ngModel)]="them.titre"
+                      placeholder="Ex: Protection des écosystèmes marins"
+                      class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    />
+                  </div>
+
+                  <!-- Puces -->
+                  <div>
+                    <div class="flex items-center justify-between mb-2">
+                      <label class="text-sm font-medium text-slate-700">Points clés</label>
+                      <button
+                        (click)="addPuceToThematique(getThematiqueGlobalIndex(palierIndex, themIndex))"
+                        class="px-3 py-1.5 text-xs bg-slate-600 text-white rounded hover:bg-slate-700 transition-colors"
+                      >
+                        + Ajouter un point
+                      </button>
+                    </div>
+
+                    <div class="space-y-2">
+                      <div
+                        *ngFor="let puce of them.puces; let j = index"
+                        class="flex gap-2 items-center"
+                      >
+                        <input
+                          type="text"
+                          [(ngModel)]="them.puces[j]"
+                          placeholder="Point clé..."
+                          class="flex-1 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                        />
+                        <button
+                          (click)="removePuceFromThematique(getThematiqueGlobalIndex(palierIndex, themIndex), j)"
+                          class="p-2 text-red-600 hover:bg-red-50 rounded transition-colors"
+                        >
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M6 18L18 6M6 6l12 12"
+                            ></path>
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div *ngIf="getThematiquesForPalier(palierIndex).length === 0" class="text-center py-8 text-slate-500 bg-slate-50 rounded-lg">
+                Aucune thématique pour ce palier. Cliquez sur "+ Ajouter thématique" pour commencer.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== ÉTAPE 5: RÈGLES BUDGÉTAIRES ========== -->
+      <div *ngIf="currentStep() === 5">
+        <h2 class="text-xl font-bold text-slate-900 mb-6">Étape 5 : Règles budgétaires</h2>
+
+        <div class="space-y-6">
+          <!-- Pourcentage max admin -->
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2"
+              >Pourcentage max frais administration (%)</label
+            >
+            <input
+              type="number"
+              [(ngModel)]="pourcentageMaxAdmin"
+              min="0"
+              max="100"
+              class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+            <p class="mt-1 text-sm text-slate-500">Entre 0 et 100%</p>
+          </div>
+
+          <!-- Catégories de dépenses -->
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <label class="text-sm font-medium text-slate-700"
+                >Catégories de dépenses autorisées</label
+              >
+              <button
+                (click)="addCategorieDepense()"
+                class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              >
+                + Ajouter catégorie
+              </button>
+            </div>
+
+            <div class="space-y-3">
+              <div
+                *ngFor="let cat of categoriesDepenses(); let i = index"
+                class="flex gap-3 items-start border rounded-lg p-4 bg-slate-50"
+              >
+                <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-xs text-slate-600 mb-1">Catégorie</label>
+                    <input
+                      type="text"
+                      [(ngModel)]="cat.categorie"
+                      placeholder="Ex: Personnel"
+                      class="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-xs text-slate-600 mb-1">Libellé</label>
+                    <input
+                      type="text"
+                      [(ngModel)]="cat.libelle"
+                      placeholder="Ex: Salaires et charges"
+                      class="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                    />
+                  </div>
+                </div>
+                <button
+                  (click)="removeCategorieDepense(i)"
+                  class="p-2 text-red-600 hover:bg-red-50 rounded transition-colors"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M6 18L18 6M6 6l12 12"
+                    ></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== ÉTAPE 6: ÉLIGIBILITÉS & ANNEXES ========== -->
+      <div *ngIf="currentStep() === 6">
+        <h2 class="text-xl font-bold text-slate-900 mb-6">Étape 6 : Éligibilités & Annexes</h2>
+
+        <div class="space-y-8">
+          <!-- Zones géographiques -->
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <label class="text-sm font-medium text-slate-700"
+                >Zones géographiques éligibles</label
+              >
+              <button
+                (click)="addEligibiliteZone()"
+                class="px-3 py-1.5 text-sm bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+              >
+                + Ajouter zone
+              </button>
+            </div>
+            <div class="space-y-2">
+              <div
+                *ngFor="let zone of eligibilitesZones(); let i = index"
+                class="flex gap-3 items-center"
+              >
+                <input
+                  type="text"
+                  [(ngModel)]="zone.libelle"
+                  placeholder="Ex: Gabon, Afrique Centrale"
+                  class="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+                <button
+                  (click)="removeEligibiliteZone(i)"
+                  class="p-2 text-red-600 hover:bg-red-50 rounded transition-colors"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M6 18L18 6M6 6l12 12"
+                    ></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Types d'organisations -->
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <label class="text-sm font-medium text-slate-700"
+                >Types d'organisations éligibles</label
+              >
+              <button
+                (click)="addEligibiliteOrganisation()"
+                class="px-3 py-1.5 text-sm bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+              >
+                + Ajouter type
+              </button>
+            </div>
+            <div class="space-y-2">
+              <div
+                *ngFor="let org of eligibilitesOrganisations(); let i = index"
+                class="flex gap-3 items-center"
+              >
+                <input
+                  type="text"
+                  [(ngModel)]="org.libelle"
+                  placeholder="Ex: ONG, PME, Coopérative"
+                  class="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+                <button
+                  (click)="removeEligibiliteOrganisation(i)"
+                  class="p-2 text-red-600 hover:bg-red-50 rounded transition-colors"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M6 18L18 6M6 6l12 12"
+                    ></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Documents exigés par type d'organisation -->
+          <div>
+            <h3 class="text-sm font-medium text-slate-700 mb-4">Documents exigés (annexes) par type d'organisation</h3>
+
+            <div *ngIf="eligibilitesOrganisations().length === 0" class="text-center py-12 bg-amber-50 border border-amber-200 rounded-lg">
+              <svg class="w-12 h-12 mx-auto text-amber-500 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+              </svg>
+              <p class="text-sm text-amber-700 font-medium">Aucun type d'organisation éligible défini</p>
+              <p class="text-xs text-amber-600 mt-1">Veuillez d'abord définir les types d'organisations éligibles ci-dessus.</p>
+            </div>
+
+            <div class="space-y-6" *ngIf="eligibilitesOrganisations().length > 0">
+              <div
+                *ngFor="let org of eligibilitesOrganisations(); let orgIndex = index"
+                class="border-2 border-green-200 rounded-lg p-5 bg-gradient-to-br from-white to-green-50"
+              >
+                <div class="flex items-center justify-between mb-4">
+                  <h4 class="font-semibold text-lg text-slate-900">
+                    <span class="inline-flex items-center gap-2">
+                      <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                      </svg>
+                      {{ org.libelle }}
+                    </span>
+                  </h4>
+                  <button
+                    (click)="addDocumentForOrganisation(orgIndex)"
+                    class="px-3 py-1.5 text-sm bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+                  >
+                    + Ajouter un document
+                  </button>
+                </div>
+
+                <div class="space-y-3">
+                  <div
+                    *ngFor="let doc of getDocumentsForOrganisation(orgIndex); let docIndex = index"
+                    class="border rounded-lg p-4 bg-white shadow-sm"
+                  >
+                    <div class="flex items-start gap-4">
+                      <div class="flex-1 space-y-3">
+                        <input
+                          type="text"
+                          [(ngModel)]="doc.libelle"
+                          placeholder="Nom du document (ex: Statuts, RIB, etc.)"
+                          class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                        />
+                        <textarea
+                          [(ngModel)]="doc.description"
+                          rows="2"
+                          placeholder="Description du document..."
+                          class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                        ></textarea>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div class="flex items-center gap-3">
+                            <input
+                              type="radio"
+                              [(ngModel)]="doc.obligatoire"
+                              [value]="true"
+                              [id]="'doc-oblig-' + orgIndex + '-' + docIndex"
+                              [name]="'oblig-' + orgIndex + '-' + docIndex"
+                              class="h-4 w-4 text-green-600 focus:ring-green-500"
+                            />
+                            <label [for]="'doc-oblig-' + orgIndex + '-' + docIndex" class="text-sm font-medium text-green-700">
+                              Obligatoire
+                            </label>
+                            <input
+                              type="radio"
+                              [(ngModel)]="doc.obligatoire"
+                              [value]="false"
+                              [id]="'doc-opt-' + orgIndex + '-' + docIndex"
+                              [name]="'oblig-' + orgIndex + '-' + docIndex"
+                              class="h-4 w-4 text-slate-600 focus:ring-slate-500"
+                            />
+                            <label [for]="'doc-opt-' + orgIndex + '-' + docIndex" class="text-sm text-slate-700">
+                              Optionnel
+                            </label>
+                          </div>
+                          <input
+                            type="url"
+                            [(ngModel)]="doc.modeleUrl"
+                            placeholder="URL modèle (facultatif)"
+                            class="px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                          />
+                        </div>
+                      </div>
+                      <button
+                        (click)="removeDocumentForOrganisation(orgIndex, docIndex)"
+                        class="p-2 text-red-600 hover:bg-red-50 rounded transition-colors"
+                      >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12"
+                          ></path>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div *ngIf="getDocumentsForOrganisation(orgIndex).length === 0" class="text-center py-6 text-slate-500 text-sm bg-slate-50 rounded-lg">
+                    Aucun document défini pour cette organisation. Cliquez sur "+ Ajouter un document" pour commencer.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== ÉTAPE 7: RÉCAPITULATIF ========== -->
+      <div *ngIf="currentStep() === 7">
+        <h2 class="text-xl font-bold text-slate-900 mb-6">Étape 7 : Récapitulatif</h2>
+
+        <div class="space-y-6">
+          <!-- Résumé textuel -->
+          <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
+            <h3 class="font-medium text-blue-900 mb-4 text-lg">Informations clés</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-blue-800">
+              <div>
+                <p class="font-semibold text-slate-700">Code</p>
+                <p>{{ code() }}</p>
+              </div>
+              <div>
+                <p class="font-semibold text-slate-700">Titre</p>
+                <p>{{ titre() }}</p>
+              </div>
+              <div>
+                <p class="font-semibold text-slate-700">Date d'ouverture</p>
+                <p>{{ dateOuverture() }}</p>
+              </div>
+              <div>
+                <p class="font-semibold text-slate-700">Date de clôture</p>
+                <p>{{ dateCloture() }}</p>
+              </div>
+              <div>
+                <p class="font-semibold text-slate-700">Nombre de paliers</p>
+                <p>{{ paliers().length }}</p>
+              </div>
+              <div>
+                <p class="font-semibold text-slate-700">Nombre de thématiques</p>
+                <p>{{ thematiques().length }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Détails des paliers -->
+          <div *ngIf="paliers().length > 0" class="bg-slate-50 border border-slate-200 rounded-lg p-6">
+            <h3 class="font-medium text-slate-900 mb-4 text-lg">Paliers de subventions</h3>
+            <div class="space-y-3">
+              <div *ngFor="let palier of paliers(); let i = index" class="border-l-4 border-green-500 pl-4">
+                <p class="font-semibold">{{ palier.libelleAffiche }}</p>
+                <p class="text-sm text-slate-600">Montant: {{ palier.montantMin | number }} - {{ palier.montantMax | number }} {{ devise() }}</p>
+                <p class="text-sm text-slate-600">Durée max: {{ palier.dureeMaxEnMois }} mois</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Boutons de navigation -->
+    <div class="mt-8 flex items-center justify-between gap-4">
+      <button
+        *ngIf="currentStep() > 1"
+        (click)="prevStep()"
+        class="px-6 py-2.5 bg-white border text-slate-700 rounded-lg hover:bg-slate-50 transition-colors"
+      >
+        ← Précédent
+      </button>
+
+      <div class="flex-1"></div>
+
+      <!-- Bouton Enregistrer brouillon -->
+      <button
+        (click)="saveDraft()"
+        [disabled]="loading()"
+        class="px-6 py-2.5 bg-slate-100 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-200 disabled:bg-slate-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+        title="Enregistrer l'état actuel sans valider toutes les étapes"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path>
+        </svg>
+        {{ loading() ? 'Enregistrement...' : 'Enregistrer brouillon' }}
+      </button>
+
+      <button
+        *ngIf="currentStep() < totalSteps"
+        (click)="nextStep()"
+        [disabled]="!canGoNext()"
+        class="px-6 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors"
+      >
+        Suivant →
+      </button>
+
+      <button
+        *ngIf="currentStep() === totalSteps"
+        (click)="submitForm()"
+        [disabled]="loading()"
+        class="px-6 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors"
+      >
+        {{ loading() ? 'Enregistrement...' : isEditMode() ? 'Mettre à jour' : "Créer l'AAP" }}
+      </button>
+    </div>
+  </div>
+</div>

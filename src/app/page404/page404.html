@@ -1,0 +1,121 @@
+<div class="relative min-h-[100dvh] bg-[#0B1F2C] text-white">
+  <!-- Liseré vert fin en haut -->
+  <div class="absolute top-0 left-0 right-0 h-1 bg-green-500"></div>
+
+  <!-- Motif décoratif (grid subtile) -->
+  <div class="pointer-events-none absolute inset-0 opacity-10 [background:radial-gradient(circle_at_1px_1px,#ffffff_1px,transparent_1px)] [background-size:22px_22px]"></div>
+
+  <!-- Contenu centré -->
+  <main class="relative z-10 mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-16 md:py-24">
+    <!-- Logo + lien accueil -->
+    <a routerLink="/" class="inline-flex items-center gap-2 group">
+      <img src="assets/logo.png" alt="FPBG" class="h-10 w-auto drop-shadow" />
+      <span class="text-sm text-white/80 group-hover:text-white transition-colors">Retour à l’accueil</span>
+    </a>
+
+    <section class="mt-10 grid gap-8 lg:grid-cols-2 items-center">
+      <!-- Illustration -->
+      <div class="order-2 lg:order-1">
+        <div class="relative">
+          <!-- Halo vert -->
+          <div class="absolute -inset-6 rounded-3xl blur-2xl bg-green-500/10"></div>
+
+          <div class="relative rounded-3xl border border-white/10 bg-white/5 p-8 md:p-10 shadow-2xl">
+            <!-- SVG 404 -->
+            <svg viewBox="0 0 480 180" class="w-full h-auto">
+              <!-- 4 -->
+              <path d="M90 150 V60 L60 100 H120" fill="none" stroke="white" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+              <!-- 0 avec glow -->
+              <defs>
+                <filter id="glow">
+                  <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                  <feMerge>
+                    <feMergeNode in="coloredBlur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
+              </defs>
+              <circle cx="240" cy="105" r="48" fill="none" stroke="#22c55e" stroke-width="12" filter="url(#glow)"/>
+              <circle cx="240" cy="105" r="28" fill="none" stroke="white" stroke-width="6" opacity="0.6"/>
+              <!-- 4 -->
+              <path d="M390 150 V60 L360 100 H420" fill="none" stroke="white" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+              <!-- petits éléments décoratifs -->
+              <g opacity="0.45">
+                <circle cx="30" cy="30" r="3" fill="#22c55e"></circle>
+                <circle cx="450" cy="24" r="3" fill="#22c55e"></circle>
+                <circle cx="420" cy="160" r="3" fill="#22c55e"></circle>
+                <circle cx="60" cy="165" r="3" fill="#22c55e"></circle>
+              </g>
+            </svg>
+
+            <!-- Cartouche info -->
+            <div class="mt-6 rounded-xl bg-[#0B1F2C]/80 border border-white/10 p-4">
+              <div class="flex items-start gap-3">
+                <div class="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-green-500"></div>
+                <p class="text-sm text-white/80 leading-relaxed">
+                  La page que vous recherchez n’existe pas ou a été déplacée.
+                  Vérifiez l’URL ou utilisez les boutons ci-dessous pour continuer votre navigation.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Texte + actions -->
+      <div class="order-1 lg:order-2">
+        <h1 class="text-4xl md:text-5xl font-bold tracking-tight">
+          Oups… <span class="text-green-400">Page introuvable</span>
+        </h1>
+        <p class="mt-4 text-white/80 max-w-prose">
+          Nous n’avons pas trouvé cette ressource. Si vous avez cliqué depuis un ancien lien d’appel à projets,
+          il se peut que le contenu ait été archivé ou renommé.
+        </p>
+
+        <!-- Actions -->
+        <div class="mt-8 flex flex-col sm:flex-row gap-3">
+          <a
+            routerLink="/"
+            class="inline-flex items-center justify-center rounded-xl px-5 py-3 font-medium
+                   bg-green-600 hover:bg-green-500 text-white shadow-lg shadow-green-600/20
+                   transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 focus:ring-offset-[#0B1F2C]">
+            Accueil FPBG
+          </a>
+
+          <a
+            routerLink="/dashboard"
+            class="inline-flex items-center justify-center rounded-xl px-5 py-3 font-medium
+                   bg-white/10 hover:bg-white/15 text-white border border-white/10
+                   transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white/40 focus:ring-offset-[#0B1F2C]">
+            Mon tableau de bord
+          </a>
+
+<!--          <a-->
+<!--            routerLink="/appel-projet"-->
+<!--            class="inline-flex items-center justify-center rounded-xl px-5 py-3 font-medium-->
+<!--                   bg-white/5 hover:bg-white/10 text-white/90 border border-white/10-->
+<!--                   transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white/40 focus:ring-offset-[#0B1F2C]">-->
+<!--            Appels à projets-->
+<!--          </a>-->
+        </div>
+
+        <!-- Liens utilitaires -->
+        <div class="mt-6 text-sm text-white/60">
+          <span class="mr-2">Besoin d’aide ?</span>
+          <a class="underline hover:text-white" routerLink="/contact">Contactez-nous</a>
+          <span class="mx-2">•</span>
+          <a class="underline hover:text-white" href="mailto:contact@fpbg.ga">contact@fpbg.ga</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer très léger -->
+  <footer class="relative z-10 mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 pb-10">
+    <div class="mt-10 h-px bg-white/10"></div>
+    <p class="mt-4 text-xs text-white/50">
+      © 2025 FPBG — Tous droits réservés.
+    </p>
+  </footer>
+</div>
+

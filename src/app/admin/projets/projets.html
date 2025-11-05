@@ -1,0 +1,443 @@
+<!-- ADMIN PROJETS — FPBG -->
+<div class="w-full">
+  <div class="grid gap-6 md:grid-cols-[280px,1fr]">
+    <!-- ===== SIDEBAR ===== -->
+    <aside
+      class="hidden text-xs font-medium bg-white border shadow-sm md:block md:sticky md:top-0 md:self-start md:min-h-screen text-slate-600"
+    >
+      <div class="p-6 border-b">
+        <p class="text-xl font-bold tracking-wider text-emerald-400 uppercase">
+          Espace Administrateur
+        </p>
+
+        <div class="grid grid-cols-2 gap-2 mt-4 text-center">
+          <div class="p-3 rounded bg-slate-100">
+            <p class="text-[11px] text-green-400">Projets</p>
+            <p class="text-lg font-semibold text-slate-600">{{ totalProjects() }}</p>
+          </div>
+          <div class="p-3 rounded bg-slate-100">
+            <p class="text-[11px] text-green-400">Appel à Projets</p>
+            <p class="text-lg font-semibold text-slate-600">
+              {{ statistiques()?.aapCount ?? '-' }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <nav class="p-2 text-sm">
+        <div class="px-3 py-2 text-slate-600">Navigation</div>
+
+        <a
+          routerLink="/admin/dashboard"
+          routerLinkActive="bg-green-500/10 border-l-4 border-green-500"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="block px-3 py-2 cursor-pointer hover:bg-green-500/10 hover:border-l-4 hover:border-green-500"
+        >
+          Vue d'ensemble
+        </a>
+
+        <a
+          routerLink="/admin/projets"
+          routerLinkActive="bg-green-500/10 border-l-4 border-green-500"
+          class="block px-3 py-2 cursor-pointer hover:bg-green-500/10 hover:border-l-4 hover:border-green-500"
+        >
+          Projets
+        </a>
+
+        <a
+          routerLink="/admin/appels-projets"
+          routerLinkActive="bg-green-500/10 border-l-4 border-green-500"
+          class="block px-3 py-2 cursor-pointer hover:bg-green-500/10 hover:border-l-4 hover:border-green-500"
+        >
+          Appels à Projets
+        </a>
+
+        <a
+          routerLink="/admin/evaluateurs"
+          routerLinkActive="bg-green-500/10 border-l-4 border-green-500"
+          class="block px-3 py-2 cursor-pointer hover:bg-green-500/10 hover:border-l-4 hover:border-green-500"
+        >
+          Evaluateurs
+        </a>
+
+        <a
+          routerLink="/admin/evaluations"
+          routerLinkActive="bg-green-500/10 border-l-4 border-green-500"
+          class="block px-3 py-2 cursor-pointer hover:bg-green-500/10 hover:border-l-4 hover:border-green-500"
+        >
+          Evaluations
+        </a>
+
+        <a
+          routerLink="/admin/statistiques"
+          routerLinkActive="bg-green-500/10 border-l-4 border-green-500"
+          class="block px-3 py-2 cursor-pointer hover:bg-green-500/10 hover:border-l-4 hover:border-green-500"
+        >
+          Statistiques
+        </a>
+
+        <a
+          routerLink="/admin/historique"
+          routerLinkActive="bg-green-500/10 border-l-4 border-green-500"
+          class="block px-3 py-2 cursor-pointer hover:bg-green-500/10 hover:border-l-4 hover:border-green-500"
+        >
+          Historique des actions
+        </a>
+      </nav>
+
+      <div class="p-2 mt-3 border-t">
+        <button
+          type="button"
+          class="w-full px-3 py-2 text-left hover:bg-green-500/10"
+          (click)="logout()"
+        >
+          Se déconnecter
+        </button>
+      </div>
+    </aside>
+
+    <!-- ===== MAIN ===== -->
+    <section class="min-h-screen px-4 md:pr-6">
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div class="min-w-0 flex-1">
+          <h1 class="pt-3 text-2xl sm:text-3xl"><strong>Projets</strong></h1>
+          <p class="pt-3 text-sm sm:text-base text-slate-600">Gestion des projets</p>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <button
+            type="button"
+            class="inline-flex items-center gap-2 px-4 py-2 border rounded-lg hover:bg-slate-50"
+            (click)="refresh()"
+            aria-label="Rafraîchir la liste"
+          >
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path
+                d="M21 12a9 9 0 10-9 9"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              ></path>
+              <path
+                d="M21 3v6h-6"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              ></path>
+            </svg>
+            Rafraîchir
+          </button>
+
+          <button
+            type="button"
+            class="px-4 py-2 border rounded-lg md:hidden hover:bg-slate-50"
+            (click)="logout()"
+            aria-label="Se déconnecter"
+          >
+            Se déconnecter
+          </button>
+        </div>
+      </div>
+
+      <!-- Onglets de filtrage par statut -->
+      <div class="flex gap-2 mt-6 overflow-x-auto bg-white border rounded-lg p-1">
+        <button
+          type="button"
+          class="px-4 py-2 text-sm font-medium rounded whitespace-nowrap transition-colors"
+          [ngClass]="
+            filtreStatut() === 'TOUS'
+              ? 'bg-slate-100 text-slate-900'
+              : 'text-slate-600 hover:bg-slate-50'
+          "
+          (click)="setFiltreStatut('TOUS')"
+        >
+          Tous les projets
+        </button>
+        <button
+          type="button"
+          class="px-4 py-2 text-sm font-medium rounded whitespace-nowrap transition-colors"
+          [ngClass]="
+            filtreStatut() === 'SOUMIS'
+              ? 'bg-slate-100 text-slate-900'
+              : 'text-slate-600 hover:bg-slate-50'
+          "
+          (click)="setFiltreStatut('SOUMIS')"
+        >
+          Soumis
+        </button>
+        <button
+          type="button"
+          class="px-4 py-2 text-sm font-medium rounded whitespace-nowrap transition-colors"
+          [ngClass]="
+            filtreStatut() === 'EN_REVUE'
+              ? 'bg-slate-100 text-slate-900'
+              : 'text-slate-600 hover:bg-slate-50'
+          "
+          (click)="setFiltreStatut('EN_REVUE')"
+        >
+          En revue
+        </button>
+        <button
+          type="button"
+          class="px-4 py-2 text-sm font-medium rounded whitespace-nowrap transition-colors"
+          [ngClass]="
+            filtreStatut() === 'REJETE'
+              ? 'bg-slate-100 text-slate-900'
+              : 'text-slate-600 hover:bg-slate-50'
+          "
+          (click)="setFiltreStatut('REJETE')"
+        >
+          Rejetés
+        </button>
+        <button
+          type="button"
+          class="px-4 py-2 text-sm font-medium rounded whitespace-nowrap transition-colors"
+          [ngClass]="
+            filtreStatut() === 'APPROUVE'
+              ? 'bg-slate-100 text-slate-900'
+              : 'text-slate-600 hover:bg-slate-50'
+          "
+          (click)="setFiltreStatut('APPROUVE')"
+        >
+          Validés
+        </button>
+      </div>
+
+      <!-- Dropdown pour sélectionner un appel d'offre -->
+      <div class="mt-4">
+        <select
+          [formControl]="appelOffre"
+          class="w-full sm:w-64 px-4 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
+        >
+          <option value="">Tous les appels à projets</option>
+          <option *ngFor="let aap of aaps()" [value]="aap.id">
+            {{ aap.code }} - {{ aap.titre }}
+          </option>
+        </select>
+      </div>
+
+      <div class="items-center justify-between hidden mt-4 text-sm sm:flex text-slate-600">
+        <p>
+          Cliquez sur <span class="font-medium">Voir</span> pour afficher les détails d'un projet.
+        </p>
+        <p class="text-xs">{{ filtered().length }} projet(s) affiché(s)</p>
+      </div>
+
+      <!-- Loading -->
+      <div *ngIf="loadingDemandes()" class="flex items-center justify-center py-12 mt-8">
+        <svg
+          class="w-10 h-10 text-green-600 animate-spin"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            class="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            stroke-width="4"
+          ></circle>
+          <path
+            class="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+          ></path>
+        </svg>
+      </div>
+
+      <!-- ===== Tableau (Desktop) ===== -->
+      <div
+        *ngIf="!loadingDemandes()"
+        class="hidden mt-4 bg-white border rounded-xl sm:block overflow-hidden"
+      >
+        <div class="relative max-h-[70vh] overflow-auto">
+          <table class="w-full border-collapse table-fixed">
+            <thead class="sticky top-0 z-20 shadow-sm bg-slate-50">
+              <tr class="text-xs font-medium tracking-wide text-left uppercase text-slate-600">
+                <th class="px-3 py-3 w-[20%]">Organisation</th>
+                <th class="px-3 py-3 w-[30%]">Projet</th>
+                <th class="px-3 py-3 w-[12%]">Statut</th>
+                <th class="px-3 py-3 w-[10%]">Soumis le</th>
+                <th *ngIf="filtreStatut() === 'APPROUVE'" class="px-3 py-3 w-[10%]">Score</th>
+                <th
+                  class="px-3 py-3 text-right"
+                  [ngClass]="filtreStatut() === 'APPROUVE' ? 'w-[18%]' : 'w-[28%]'"
+                >
+                  Actions
+                </th>
+              </tr>
+            </thead>
+
+            <tbody class="divide-y">
+              <tr *ngFor="let demande of filtered(); trackBy: trackById" class="hover:bg-slate-50">
+                <!-- Organisation -->
+                <td class="px-3 py-4 align-top">
+                  <div class="min-w-0">
+                    <p
+                      class="font-medium text-slate-900 truncate"
+                      [title]="demande.organisation?.nom || '—'"
+                    >
+                      {{ demande.organisation?.nom || '—' }}
+                    </p>
+                    <p
+                      class="mt-0.5 text-xs text-slate-600 truncate"
+                      [title]="demande.soumisPar?.email || '—'"
+                    >
+                      {{ demande.soumisPar?.email || '—' }}
+                    </p>
+                  </div>
+                </td>
+
+                <!-- Projet -->
+                <td class="px-3 py-4 align-top">
+                  <div class="min-w-0">
+                    <p class="font-medium text-slate-900 truncate" [title]="demande.titre">
+                      {{ demande.titre }}
+                    </p>
+                    <p
+                      class="mt-1 text-xs text-slate-600 truncate"
+                      [title]="demande.localisation + ' • ' + demande.dureeMois + ' mois'"
+                    >
+                      {{ demande.localisation }} • {{ demande.dureeMois }} mois
+                    </p>
+                  </div>
+                </td>
+
+                <!-- Statut -->
+                <td class="px-3 py-4 align-top">
+                  <span
+                    class="inline-block rounded-full px-2 py-0.5 text-xs font-medium truncate max-w-full"
+                    [ngClass]="getStatutClass(demande.statut)"
+                    [title]="getStatutLabel(demande.statut)"
+                  >
+                    {{ getStatutLabel(demande.statut) }}
+                  </span>
+                </td>
+
+                <!-- Date de soumission -->
+                <td class="px-3 py-4 text-xs align-top text-slate-600">
+                  {{ demande.creeLe | date : 'dd/MM/yy' }}
+                </td>
+
+                <!-- Score (uniquement pour les projets validés) -->
+                <td
+                  *ngIf="filtreStatut() === 'APPROUVE'"
+                  class="px-3 py-4 text-sm align-top text-slate-900 font-medium"
+                >
+                  <!-- TODO: Afficher le score réel si disponible -->
+                  —
+                </td>
+
+                <!-- Actions -->
+                <td class="px-3 py-4 align-top">
+                  <div class="flex items-center justify-end gap-2 flex-wrap">
+                    <button
+                      type="button"
+                      class="px-3 py-1.5 rounded-lg border text-xs hover:bg-slate-50 whitespace-nowrap"
+                      (click)="goToRecap(demande.id)"
+                      aria-label="Voir le récap"
+                    >
+                      Voir
+                    </button>
+                  </div>
+                </td>
+              </tr>
+
+              <tr *ngIf="filtered().length === 0">
+                <td
+                  [attr.colspan]="filtreStatut() === 'APPROUVE' ? 6 : 5"
+                  class="px-4 py-10 text-center text-slate-500"
+                >
+                  <div class="flex flex-col items-center gap-3">
+                    <svg
+                      class="w-12 h-12 text-slate-300"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                      <path d="M14 2v6h6"></path>
+                    </svg>
+                    <p>Aucun projet trouvé</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ===== Liste Mobile ===== -->
+      <div *ngIf="!loadingDemandes()" class="grid gap-3 mt-4 sm:hidden">
+        <div
+          *ngFor="let demande of filtered(); trackBy: trackById"
+          class="p-4 bg-white border rounded-xl"
+        >
+          <div class="flex items-start justify-between gap-3 mb-2">
+            <div class="flex-1 min-w-0">
+              <h3
+                class="font-semibold text-slate-900 line-clamp-2 break-words"
+                [title]="demande.titre"
+              >
+                {{ demande.titre }}
+              </h3>
+              <p class="mt-1 text-xs text-slate-500 truncate" [title]="demande.organisation?.nom">
+                {{ demande.organisation?.nom }}
+              </p>
+              <p class="mt-0.5 text-xs text-slate-400 truncate" [title]="demande.soumisPar?.email">
+                {{ demande.soumisPar?.email }}
+              </p>
+            </div>
+            <span
+              class="px-2 py-1 text-xs font-medium rounded-full flex-shrink-0 whitespace-nowrap"
+              [ngClass]="getStatutClass(demande.statut)"
+            >
+              {{ getStatutLabel(demande.statut) }}
+            </span>
+          </div>
+
+          <div class="mt-2 pt-2 border-t border-slate-100">
+            <div class="flex items-center justify-between text-xs text-slate-500 mb-2">
+              <span class="truncate" [title]="demande.localisation"
+                >📍 {{ demande.localisation }}</span
+              >
+              <span class="flex-shrink-0 ml-2">🕐 {{ demande.dureeMois }} mois</span>
+            </div>
+            <div class="flex items-center justify-between text-xs text-slate-500 mb-3">
+              <span>Soumis le {{ demande.creeLe | date : 'dd/MM/yy' }}</span>
+              <span *ngIf="filtreStatut() === 'APPROUVE'" class="font-medium">Score: —</span>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-end gap-2">
+            <button
+              type="button"
+              class="px-3 py-1.5 rounded-lg border text-xs hover:bg-slate-50"
+              (click)="goToRecap(demande.id)"
+            >
+              Voir
+            </button>
+          </div>
+        </div>
+
+        <!-- Message si aucun projet -->
+        <div *ngIf="filtered().length === 0" class="p-8 text-center bg-white border rounded-xl">
+          <svg
+            class="w-12 h-12 mx-auto text-slate-300"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <path d="M14 2v6h6"></path>
+          </svg>
+          <p class="mt-3 text-sm text-slate-500">Aucun projet trouvé</p>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>

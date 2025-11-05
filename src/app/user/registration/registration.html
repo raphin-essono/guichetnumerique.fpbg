@@ -1,0 +1,428 @@
+<div class="min-h-screen grid place-items-center bg-[#1f3b52] px-4">
+  <div
+    class="w-full max-w-3xl rounded-3xl bg-[#0F2434] text-white p-8 md:p-10 shadow-2xl border border-white/10"
+  >
+    <!-- Logo + titre -->
+    <div class="flex justify-center">
+      <img src="assets/logo.png" alt="FPBG" class="w-auto h-12" />
+    </div>
+    <h1 class="mt-4 text-3xl font-bold text-center">Bienvenue</h1>
+
+    <!-- Onglets -->
+    <div class="grid max-w-md grid-cols-2 gap-6 mx-auto mt-6">
+      <a
+        routerLink="/login"
+        class="rounded-md bg-[#1F3B52] text-slate-200 px-6 py-2 text-center font-semibold hover:bg-[#21435e] transition"
+      >
+        Connexion
+      </a>
+      <button
+        type="button"
+        class="px-6 py-2 font-semibold text-center transition bg-green-600 rounded-md hover:bg-green-500"
+      >
+        Inscription
+      </button>
+    </div>
+
+    <!-- Stepper -->
+    <div class="flex items-center justify-center gap-6 mt-7">
+      <div
+        class="flex items-center justify-center w-8 h-8 rounded-full"
+        [ngClass]="{ 'bg-green-600': step() >= 1, 'bg-[#1F3B52]': step() < 1 }"
+      >
+        1
+      </div>
+      <div class="w-12 h-0.5 bg-slate-600"></div>
+      <div
+        class="flex items-center justify-center w-8 h-8 rounded-full"
+        [ngClass]="{ 'bg-green-600': step() === 2, 'bg-[#1F3B52]': step() !== 2 }"
+      >
+        2
+      </div>
+    </div>
+
+    <h2 class="mt-5 text-lg font-semibold text-center">
+      {{ step() === 1 ? 'Informations sur l’organisme' : 'Informations sur le demandeur' }}
+    </h2>
+
+    <!-- ✅ Alerte erreur globale avec animation shake -->
+    <div
+      *ngIf="error()"
+      class="px-4 py-3 mt-4 border rounded-lg transition-all duration-300 animate-shake"
+      [ngClass]="{
+        'text-red-200 border-red-500/30 bg-red-500/10': !emailAlreadyUsed(),
+        'text-yellow-200 border-2 border-yellow-500 bg-yellow-500/20': emailAlreadyUsed()
+      }"
+    >
+      <div class="flex items-start gap-3">
+        <!-- ✅ Icône d'alerte pour email déjà utilisé -->
+        <svg *ngIf="emailAlreadyUsed()" class="w-6 h-6 mt-0.5 flex-shrink-0 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+        </svg>
+        <!-- ✅ Icône d'erreur générale -->
+        <svg *ngIf="!emailAlreadyUsed()" class="w-6 h-6 mt-0.5 flex-shrink-0 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+        </svg>
+
+        <div class="flex-1">
+          <p class="font-bold text-xl">{{ error() }}</p>
+
+          <!-- ✅ Message explicatif pour email déjà utilisé -->
+          <p *ngIf="emailAlreadyUsed()" class="mt-2 text-sm text-yellow-100">
+            Un compte existe déjà avec l'email <strong class="text-white">{{ form.controls.email.value }}</strong>.
+            <br>Connectez-vous ou utilisez une autre adresse email.
+          </p>
+
+          <!-- ✅ Bouton pour se connecter si email déjà utilisé -->
+          <a *ngIf="emailAlreadyUsed()"
+             routerLink="/login"
+             class="inline-block mt-3 px-5 py-2.5 bg-yellow-600 hover:bg-yellow-500 text-white font-bold rounded-lg transition shadow-lg">
+            → Se connecter maintenant
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Étape 1 : Organisme ===== -->
+    <form *ngIf="step() === 1" class="grid gap-4 mt-6" [formGroup]="form" (ngSubmit)="next()">
+      <!-- Nom org -->
+      <div>
+        <label class="block mb-1 text-sm text-slate-300">Nom de l’organisation</label>
+        <input
+          formControlName="nom_organisation"
+          class="w-full rounded-md bg-[#1F3B52] border border-white/10 px-4 py-2.5"
+          placeholder="Association d’agriculture"
+        />
+        <p
+          class="mt-1 text-xs text-red-300"
+          *ngIf="form.get('nom_organisation')?.touched && form.get('nom_organisation')?.invalid"
+        >
+          Nom de l’organisation requis.
+        </p>
+      </div>
+
+      <!-- Type org -->
+      <div>
+        <label class="block mb-1 text-sm text-slate-300">Type d’organisation</label>
+        <select
+          formControlName="type"
+          class="w-full rounded-md bg-[#1F3B52] border border-white/10 px-4 py-2.5"
+        >
+          <option value="">-- Sélectionner --</option>
+          <option *ngFor="let t of type" [value]="t">{{ t }}</option>
+        </select>
+        <p
+          class="mt-1 text-xs text-red-300"
+          *ngIf="form.get('type')?.touched && form.get('type')?.invalid"
+        >
+          Type d’organisation requis.
+        </p>
+      </div>
+
+      <!-- Couverture -->
+      <div>
+        <label class="block mb-1 text-sm text-slate-300">Couverture géographique</label>
+        <select
+          formControlName="couvertureGeographique"
+          class="w-full rounded-md bg-[#1F3B52] border border-white/10 px-4 py-2.5"
+        >
+          <option value="">-- Sélectionner --</option>
+          <option *ngFor="let c of couvertureGeographique" [value]="c">{{ c }}</option>
+        </select>
+        <p
+          class="mt-1 text-xs text-red-300"
+          *ngIf="
+            form.get('couvertureGeographique')?.touched &&
+            form.get('couvertureGeographique')?.invalid
+          "
+        >
+          Couverture requise.
+        </p>
+      </div>
+
+      <!-- Type de subvention -->
+      <div>
+        <label class="block mb-1 text-sm text-slate-300">Type de subvention</label>
+        <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <label
+            class="flex items-center gap-2 rounded-md bg-[#1F3B52] border border-white/10 px-4 py-2.5 cursor-pointer"
+          >
+            <input
+              type="radio"
+              class="accent-green-600"
+              formControlName="typeSubvention"
+              value="Petite subvention"
+            />
+            <span>Petite subvention</span>
+          </label>
+          <label
+            class="flex items-center gap-2 rounded-md bg-[#1F3B52] border border-white/10 px-4 py-2.5 cursor-pointer"
+          >
+            <input
+              type="radio"
+              class="accent-green-600"
+              formControlName="typeSubvention"
+              value="Moyenne subvention"
+            />
+            <span>Moyenne subvention</span>
+          </label>
+        </div>
+        <p
+          class="mt-1 text-xs text-red-300"
+          *ngIf="form.get('typeSubvention')?.touched && form.get('typeSubvention')?.invalid"
+        >
+          Choisissez un type de subvention.
+        </p>
+      </div>
+
+      <!-- Email/Tel org -->
+      <div class="grid gap-4 md:grid-cols-2">
+        <div>
+          <label class="block mb-1 text-sm text-slate-300">Email de contact</label>
+          <input
+            type="email"
+            formControlName="email"
+            class="w-full rounded-md bg-[#1F3B52] px-4 py-2.5 transition-all duration-300"
+            [ngClass]="{
+              'border border-white/10': !form.get('email')?.hasError('emailUsed'),
+              'border-2 border-yellow-500 bg-yellow-500/10': form.get('email')?.hasError('emailUsed')
+            }"
+            placeholder="fpbg@gmail.com"
+          />
+          <p
+            class="mt-1 text-xs text-red-300"
+            *ngIf="form.get('email')?.touched && form.get('email')?.hasError('email')"
+          >
+            Email valide requis.
+          </p>
+          <p
+            class="mt-1 text-xs text-yellow-300 font-medium"
+            *ngIf="form.get('email')?.hasError('emailUsed')"
+          >
+            ⚠️ Cet email est déjà enregistré. Utilisez un autre email ou connectez-vous.
+          </p>
+        </div>
+        <div>
+          <label class="block mb-1 text-sm text-slate-300">Téléphone</label>
+          <input
+            formControlName="telephone"
+            class="w-full rounded-md bg-[#1F3B52] border border-white/10 px-4 py-2.5"
+            placeholder="0XX XX XX XX ou +241XXXXXXXX"
+          />
+          <p
+            class="mt-1 text-xs text-red-300"
+            *ngIf="form.get('telephone')?.touched && form.get('telephone')?.hasError('required')"
+          >
+            Téléphone requis.
+          </p>
+          <p
+            class="mt-1 text-xs text-red-300"
+            *ngIf="form.get('telephone')?.touched && form.get('telephone')?.hasError('gabonPhone')"
+          >
+            ❌ Format invalide. Utilisez : 062897570, 06 28 97 570 ou +241062897570
+          </p>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex justify-center gap-3 mt-3">
+        <button
+          type="submit"
+          [disabled]="loading()"
+          class="rounded-md bg-green-600 hover:bg-green-500 px-8 py-2.5 font-semibold disabled:opacity-60 disabled:cursor-not-allowed transition"
+        >
+          Suivant
+        </button>
+      </div>
+    </form>
+
+    <!-- ===== Étape 2 : Demandeur ===== -->
+    <form *ngIf="step() === 2" class="grid gap-4 mt-6" [formGroup]="form" (ngSubmit)="submit()">
+      <!-- <h2 class="text-lg font-semibold text-center">Informations sur le Demandeur</h2> -->
+
+      <!-- Prénom & Nom -->
+      <div class="grid gap-4 md:grid-cols-2">
+        <div>
+          <label class="block mb-1 text-sm text-slate-300">Prénom</label>
+          <input
+            formControlName="prenom"
+            class="w-full rounded-md bg-[#1F3B52] border border-white/10 px-4 py-2.5"
+            placeholder="Jean"
+          />
+          <p
+            class="mt-1 text-xs text-red-300"
+            *ngIf="form.get('prenom')?.touched && form.get('prenom')?.invalid"
+          >
+            Prénom requis.
+          </p>
+        </div>
+        <div>
+          <label class="block mb-1 text-sm text-slate-300">Nom</label>
+          <input
+            formControlName="nom"
+            class="w-full rounded-md bg-[#1F3B52] border border-white/10 px-4 py-2.5"
+            placeholder="Dupont"
+          />
+          <p
+            class="mt-1 text-xs text-red-300"
+            *ngIf="form.get('nom')?.touched && form.get('nom')?.invalid"
+          >
+            Nom requis.
+          </p>
+        </div>
+      </div>
+
+      <!-- Poste -->
+      <div>
+        <label class="block mb-1 text-sm text-slate-300">Fonction</label>
+        <input
+          formControlName="fonction"
+          class="w-full rounded-md bg-[#1F3B52] border border-white/10 px-4 py-2.5"
+          placeholder="Responsable projet"
+        />
+      </div>
+
+      <!-- Tel / Email -->
+      <div class="grid gap-4 md:grid-cols-2">
+        <div>
+          <label class="block mb-1 text-sm text-slate-300">Téléphone</label>
+          <input
+            formControlName="telephoneContact"
+            class="w-full rounded-md bg-[#1F3B52] border border-white/10 px-4 py-2.5"
+            placeholder="0XX XX XX XX ou +241XXXXXXXX"
+          />
+          <p
+            class="mt-1 text-xs text-red-300"
+            *ngIf="form.get('telephoneContact')?.touched && form.get('telephoneContact')?.hasError('required')"
+          >
+            Téléphone requis.
+          </p>
+          <p
+            class="mt-1 text-xs text-red-300"
+            *ngIf="form.get('telephoneContact')?.touched && form.get('telephoneContact')?.hasError('gabonPhone')"
+          >
+            Format invalide. Utilisez 0XX XX XX XX (ex. 061 23 45 67) ou +241XXXXXXXX.
+          </p>
+        </div>
+        <div>
+          <label class="block mb-1 text-sm text-slate-300">Email</label>
+          <input
+            type="email"
+            formControlName="email"
+            class="w-full rounded-md bg-[#1F3B52] px-4 py-2.5 transition-all duration-300"
+            [ngClass]="{
+              'border border-white/10': !form.get('email')?.hasError('emailUsed'),
+              'border-2 border-yellow-500 bg-yellow-500/10': form.get('email')?.hasError('emailUsed')
+            }"
+            placeholder="fpbg@gmail.com"
+          />
+          <p
+            class="mt-1 text-xs text-red-300"
+            *ngIf="form.get('email')?.touched && form.get('email')?.hasError('email')"
+          >
+            Email valide requis.
+          </p>
+          <p
+            class="mt-1 text-xs text-yellow-300 font-medium"
+            *ngIf="form.get('email')?.hasError('emailUsed')"
+          >
+            ⚠️ Cet email est déjà enregistré. Utilisez un autre email ou connectez-vous.
+          </p>
+        </div>
+      </div>
+
+      <!-- Password / Confirm -->
+      <div class="grid gap-4 md:grid-cols-2">
+        <div>
+          <label class="block mb-1 text-sm text-slate-300">Mot de passe</label>
+          <div class="relative">
+            <input
+              [type]="showPassword() ? 'text' : 'password'"
+              formControlName="motDePasse"
+              class="w-full rounded-md bg-[#1F3B52] border border-white/10 px-4 py-2.5 pr-10"
+              placeholder="********"
+            />
+            <button
+              type="button"
+              (click)="togglePasswordVisibility()"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 transition"
+            >
+              <!-- Eye icon (password hidden) -->
+              <svg *ngIf="!showPassword()" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+              </svg>
+              <!-- Eye-off icon (password visible) -->
+              <svg *ngIf="showPassword()" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.781zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z" clip-rule="evenodd" />
+                <path d="M12.454 16.697L9.75 13.992a4 4 0 01-3.742-3.741L2.335 6.578A9.98 9.98 0 00.458 10c1.274 4.057 5.065 7 9.542 7 .847 0 1.669-.105 2.454-.303z" />
+              </svg>
+            </button>
+          </div>
+          <p
+            class="mt-1 text-xs text-red-300"
+            *ngIf="form.get('motDePasse')?.touched && form.get('motDePasse')?.invalid"
+          >
+            Mot de passe requis (6 caractères minimum).
+          </p>
+        </div>
+        <div>
+          <label class="block mb-1 text-sm text-slate-300">Confirmer le mot de passe</label>
+          <div class="relative">
+            <input
+              [type]="showConfirmPassword() ? 'text' : 'password'"
+              formControlName="confirmMotDePasse"
+              class="w-full rounded-md bg-[#1F3B52] border border-white/10 px-4 py-2.5 pr-10"
+              placeholder="********"
+            />
+            <button
+              type="button"
+              (click)="toggleConfirmPasswordVisibility()"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 transition"
+            >
+              <!-- Eye icon (password hidden) -->
+              <svg *ngIf="!showConfirmPassword()" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+              </svg>
+              <!-- Eye-off icon (password visible) -->
+              <svg *ngIf="showConfirmPassword()" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.781zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z" clip-rule="evenodd" />
+                <path d="M12.454 16.697L9.75 13.992a4 4 0 01-3.742-3.741L2.335 6.578A9.98 9.98 0 00.458 10c1.274 4.057 5.065 7 9.542 7 .847 0 1.669-.105 2.454-.303z" />
+              </svg>
+            </button>
+          </div>
+          <p
+            class="mt-1 text-xs text-red-300"
+            *ngIf="
+              form.get('confirmMotDePasse')?.touched &&
+              (form.get('confirmMotDePasse')?.invalid ||
+                form.value.motDePasse !== form.value.confirmMotDePasse)
+            "
+          >
+            Confirmation invalide : les mots de passe doivent correspondre.
+          </p>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex justify-center gap-3 mt-3">
+        <button
+          type="button"
+          (click)="step.set(1)"
+          class="rounded-md bg-slate-600 hover:bg-slate-500 px-8 py-2.5 font-semibold transition"
+        >
+          Retour
+        </button>
+        <button
+          type="submit"
+          [disabled]="loading()"
+          class="rounded-md bg-green-600 hover:bg-green-500 px-8 py-2.5 font-semibold disabled:opacity-60 disabled:cursor-not-allowed transition"
+        >
+          <span *ngIf="!loading()">Créer le compte</span>
+          <span *ngIf="loading()">Création en cours...</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

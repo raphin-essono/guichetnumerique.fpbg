@@ -1,0 +1,96 @@
+<!-- Conteneur fixe en haut à droite -->
+<div class="fixed top-4 right-4 z-[9999] grid gap-2">
+  <div
+    *ngFor="let t of toast.toasts()"
+    class="min-w-[260px] max-w-[360px] rounded-lg px-4 py-3 shadow-lg border text-sm flex items-start gap-3 animate-slideIn"
+    [class.bg-emerald-50]="t.type === 'success'"
+    [class.border-emerald-200]="t.type === 'success'"
+    [class.text-emerald-800]="t.type === 'success'"
+    [class.bg-red-50]="t.type === 'error'"
+    [class.border-red-200]="t.type === 'error'"
+    [class.text-red-800]="t.type === 'error'"
+    [class.bg-blue-50]="t.type === 'info'"
+    [class.border-blue-200]="t.type === 'info'"
+    [class.text-blue-800]="t.type === 'info'"
+    [class.bg-yellow-50]="t.type === 'warning'"
+    [class.border-yellow-200]="t.type === 'warning'"
+    [class.text-yellow-800]="t.type === 'warning'"
+  >
+    <div class="pt-0.5">
+      <!-- Icône success -->
+      <svg
+        *ngIf="t.type === 'success'"
+        class="h-5 w-5"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M9 12l2 2 4-4"></path>
+        <circle cx="12" cy="12" r="10"></circle>
+      </svg>
+      <!-- Icône error -->
+      <svg
+        *ngIf="t.type === 'error'"
+        class="h-5 w-5"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M18 6L6 18M6 6l12 12"></path>
+        <circle cx="12" cy="12" r="10"></circle>
+      </svg>
+      <!-- Icône info -->
+      <svg
+        *ngIf="t.type === 'info'"
+        class="h-5 w-5"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="16" x2="12" y2="12"></line>
+        <line x1="12" y1="8" x2="12" y2="8"></line>
+      </svg>
+      <!-- Icône warning -->
+      <svg
+        *ngIf="t.type === 'warning'"
+        class="h-5 w-5"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path
+          d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
+        ></path>
+        <line x1="12" y1="9" x2="12" y2="13"></line>
+        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+      </svg>
+    </div>
+    <div class="flex-1">{{ t.message }}</div>
+    <button class="opacity-60 hover:opacity-100" (click)="toast.dismiss(t.id)">
+      <svg
+        class="h-4 w-4"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M18 6L6 18M6 6l12 12"></path>
+      </svg>
+    </button>
+  </div>
+</div>

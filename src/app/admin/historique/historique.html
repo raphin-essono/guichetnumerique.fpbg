@@ -1,0 +1,450 @@
+<!-- ADMIN HISTORIQUE — FPBG -->
+<div class="w-full">
+  <div class="grid gap-6 md:grid-cols-[280px,1fr]">
+    <!-- ===== SIDEBAR ===== -->
+    <aside
+      class="hidden text-xs font-medium bg-white border shadow-sm md:block md:sticky md:top-0 md:self-start md:min-h-screen text-slate-600"
+    >
+      <div class="p-6 border-b">
+        <p class="text-xl font-bold tracking-wider text-emerald-400 uppercase">
+          Espace Administrateur
+        </p>
+
+        <div class="grid grid-cols-2 gap-2 mt-4 text-center">
+          <div class="p-3 rounded bg-slate-100">
+            <p class="text-[11px] text-green-400">Projets</p>
+            <p class="text-lg font-semibold text-slate-600">{{ totalProjects() }}</p>
+          </div>
+          <div class="p-3 rounded bg-slate-100">
+            <p class="text-[11px] text-green-400">Appel à Projets</p>
+            <p class="text-lg font-semibold text-slate-600">
+              {{ statistiques()?.aapCount ?? '-' }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <nav class="p-2 text-sm">
+        <div class="px-3 py-2 text-slate-600">Navigation</div>
+
+        <a
+          routerLink="/admin/dashboard"
+          routerLinkActive="bg-green-500/10 border-l-4 border-green-500"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="block px-3 py-2 cursor-pointer hover:bg-green-500/10 hover:border-l-4 hover:border-green-500"
+        >
+          Vue d'ensemble
+        </a>
+
+        <a
+          routerLink="/admin/projets"
+          routerLinkActive="bg-green-500/10 border-l-4 border-green-500"
+          class="block px-3 py-2 cursor-pointer hover:bg-green-500/10 hover:border-l-4 hover:border-green-500"
+        >
+          Projets
+        </a>
+
+        <a
+          routerLink="/admin/appels-projets"
+          routerLinkActive="bg-green-500/10 border-l-4 border-green-500"
+          class="block px-3 py-2 cursor-pointer hover:bg-green-500/10 hover:border-l-4 hover:border-green-500"
+        >
+          Appels à Projets
+        </a>
+
+        <a
+          routerLink="/admin/evaluateurs"
+          routerLinkActive="bg-green-500/10 border-l-4 border-green-500"
+          class="block px-3 py-2 cursor-pointer hover:bg-green-500/10 hover:border-l-4 hover:border-green-500"
+        >
+          Evaluateurs
+        </a>
+
+        <a
+          routerLink="/admin/evaluations"
+          routerLinkActive="bg-green-500/10 border-l-4 border-green-500"
+          class="block px-3 py-2 cursor-pointer hover:bg-green-500/10 hover:border-l-4 hover:border-green-500"
+        >
+          Evaluations
+        </a>
+
+        <a
+          routerLink="/admin/statistiques"
+          routerLinkActive="bg-green-500/10 border-l-4 border-green-500"
+          class="block px-3 py-2 cursor-pointer hover:bg-green-500/10 hover:border-l-4 hover:border-green-500"
+        >
+          Statistiques
+        </a>
+
+        <a
+          routerLink="/admin/historique"
+          routerLinkActive="bg-green-500/10 border-l-4 border-green-500"
+          class="block px-3 py-2 cursor-pointer hover:bg-green-500/10 hover:border-l-4 hover:border-green-500"
+        >
+          Historique des actions
+        </a>
+      </nav>
+
+      <div class="p-2 mt-3 border-t">
+        <button
+          type="button"
+          class="w-full px-3 py-2 text-left hover:bg-green-500/10"
+          (click)="logout()"
+        >
+          Se déconnecter
+        </button>
+      </div>
+    </aside>
+
+    <!-- ===== MAIN ===== -->
+    <section class="min-h-screen px-4 md:pr-6">
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div class="min-w-0 flex-1">
+          <h1 class="pt-3 text-2xl sm:text-3xl"><strong>Historique</strong></h1>
+          <p class="pt-3 text-sm sm:text-base text-slate-600">
+            Consultez l'historique pour la traçabilité
+          </p>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <button
+            type="button"
+            class="inline-flex items-center gap-2 px-4 py-2 border rounded-lg hover:bg-slate-50"
+            (click)="refresh()"
+            aria-label="Rafraîchir la liste"
+          >
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path
+                d="M21 12a9 9 0 10-9 9"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              ></path>
+              <path
+                d="M21 3v6h-6"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              ></path>
+            </svg>
+            Rafraîchir
+          </button>
+
+          <button
+            type="button"
+            class="px-4 py-2 border rounded-lg md:hidden hover:bg-slate-50"
+            (click)="logout()"
+            aria-label="Se déconnecter"
+          >
+            Se déconnecter
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats cartes -->
+      <div class="grid gap-3 sm:gap-4 mt-6 grid-cols-1 sm:grid-cols-4">
+        <div class="p-4 sm:p-5 bg-white border rounded-xl flex items-center justify-between">
+          <div>
+            <p class="text-xs sm:text-sm text-slate-600 truncate">Total Actions</p>
+            <p class="mt-1 text-xl sm:text-2xl font-semibold text-indigo-600">
+              {{ totalActions() }}
+            </p>
+          </div>
+          <div class="text-slate-300">
+            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M12 8v4l3 3" stroke-width="2" stroke-linecap="round"></path>
+              <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2"></path>
+            </svg>
+          </div>
+        </div>
+
+        <div class="p-4 sm:p-5 bg-white border rounded-xl flex items-center justify-between">
+          <div>
+            <p class="text-xs sm:text-sm text-slate-600 truncate">Aujourd'hui</p>
+            <p class="mt-1 text-xl sm:text-2xl font-semibold text-amber-600">
+              {{ actionsAujourdhui() }}
+            </p>
+          </div>
+          <div class="text-slate-300">
+            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M8 2v4M16 2v4M3 10h18" stroke-width="2" stroke-linecap="round"></path>
+              <rect x="3" y="4" width="18" height="18" rx="2" stroke-width="2"></rect>
+            </svg>
+          </div>
+        </div>
+
+        <div class="p-4 sm:p-5 bg-white border rounded-xl flex items-center justify-between">
+          <div>
+            <p class="text-xs sm:text-sm text-slate-600 truncate">Cette semaine</p>
+            <p class="mt-1 text-xl sm:text-2xl font-semibold text-emerald-600">
+              {{ actionsSemaine() }}
+            </p>
+          </div>
+          <div class="text-slate-300">
+            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke-width="2"></path>
+              <path d="M9 22V12h6v10" stroke-width="2"></path>
+            </svg>
+          </div>
+        </div>
+
+        <div class="p-4 sm:p-5 bg-white border rounded-xl flex items-center justify-between">
+          <div>
+            <p class="text-xs sm:text-sm text-slate-600 truncate">Utilisateurs actifs</p>
+            <p class="mt-1 text-xl sm:text-2xl font-semibold text-rose-600">
+              {{ utilisateursActifs() }}
+            </p>
+          </div>
+          <div class="text-slate-300">
+            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke-width="2"></path>
+              <circle cx="9" cy="7" r="4" stroke-width="2"></circle>
+              <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke-width="2"></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filtres et Export -->
+      <div class="mt-6 flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+        <div class="flex flex-col sm:flex-row gap-3 flex-1 w-full sm:w-auto">
+          <!-- Barre de recherche -->
+          <input
+            type="text"
+            [formControl]="q"
+            placeholder="Rechercher par action, responsable, email..."
+            class="flex-1 px-4 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+          />
+
+          <!-- Filtre par type d'action -->
+          <select
+            [formControl]="filtreType"
+            class="px-4 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+          >
+            <option value="">Tous les types</option>
+            <option value="creation">Création</option>
+            <option value="modification">Modification</option>
+            <option value="suppression">Suppression</option>
+            <option value="connexion">Connexion</option>
+            <option value="validation">Validation</option>
+            <option value="rejet">Rejet</option>
+          </select>
+
+          <!-- Filtre par période -->
+          <select
+            [formControl]="filtrePeriode"
+            class="px-4 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+          >
+            <option value="">Toutes les périodes</option>
+            <option value="today">Aujourd'hui</option>
+            <option value="week">Cette semaine</option>
+            <option value="month">Ce mois</option>
+            <option value="year">Cette année</option>
+          </select>
+        </div>
+
+        <!-- Boutons d'export -->
+        <div class="flex gap-2">
+          <button
+            type="button"
+            class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
+            (click)="exporterExcel()"
+            aria-label="Exporter en Excel"
+          >
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path
+                d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"
+                stroke-width="2"
+                stroke-linecap="round"
+              ></path>
+              <path d="M7 10l5 5 5-5M12 15V3" stroke-width="2" stroke-linecap="round"></path>
+            </svg>
+            Excel
+          </button>
+
+          <button
+            type="button"
+            class="inline-flex items-center gap-2 px-4 py-2 bg-rose-600 text-white rounded-lg hover:bg-rose-700"
+            (click)="exporterPDF()"
+            aria-label="Exporter en PDF"
+          >
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path
+                d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"
+                stroke-width="2"
+                stroke-linecap="round"
+              ></path>
+              <path d="M7 10l5 5 5-5M12 15V3" stroke-width="2" stroke-linecap="round"></path>
+            </svg>
+            PDF
+          </button>
+        </div>
+      </div>
+
+      <div class="items-center justify-between hidden mt-4 text-sm sm:flex text-slate-600">
+        <p>Historique complet des actions effectuées sur la plateforme</p>
+        <p class="text-xs">{{ filtered().length }} action(s) affichée(s)</p>
+      </div>
+
+      <!-- Loading -->
+      <div *ngIf="loading()" class="flex items-center justify-center py-12 mt-8">
+        <svg
+          class="w-10 h-10 text-green-600 animate-spin"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            class="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            stroke-width="4"
+          ></circle>
+          <path
+            class="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+          ></path>
+        </svg>
+      </div>
+
+      <!-- ===== Tableau (Desktop) ===== -->
+      <div
+        *ngIf="!loading()"
+        class="hidden mt-4 bg-white border rounded-xl sm:block overflow-hidden"
+      >
+        <div class="relative max-h-[70vh] overflow-auto">
+          <table class="w-full border-collapse table-fixed">
+            <thead class="sticky top-0 z-20 shadow-sm bg-slate-50">
+              <tr class="text-xs font-medium tracking-wide text-left uppercase text-slate-600">
+                <th class="px-3 py-3 w-[30%]">Actions effectuées</th>
+                <th class="px-3 py-3 w-[20%]">Nom responsable</th>
+                <th class="px-3 py-3 w-[25%]">Email responsable</th>
+                <th class="px-3 py-3 w-[15%]">Date</th>
+                <th class="px-3 py-3 w-[10%] text-center">Type</th>
+              </tr>
+            </thead>
+
+            <tbody class="divide-y">
+              <tr *ngFor="let action of filtered(); trackBy: trackById" class="hover:bg-slate-50">
+                <!-- Action -->
+                <td class="px-3 py-4 align-top">
+                  <div class="min-w-0">
+                    <p class="font-medium text-slate-900 truncate" [title]="action.description">
+                      {{ action.description }}
+                    </p>
+                    <p class="mt-0.5 text-xs text-slate-500 truncate" *ngIf="action.details">
+                      {{ action.details }}
+                    </p>
+                  </div>
+                </td>
+
+                <!-- Nom responsable -->
+                <td class="px-3 py-4 align-top">
+                  <p class="text-slate-900 truncate" [title]="action.nomResponsable">
+                    {{ action.nomResponsable || '—' }}
+                  </p>
+                </td>
+
+                <!-- Email responsable -->
+                <td class="px-3 py-4 align-top">
+                  <p class="text-slate-600 truncate" [title]="action.emailResponsable">
+                    {{ action.emailResponsable || '—' }}
+                  </p>
+                </td>
+
+                <!-- Date -->
+                <td class="px-3 py-4 text-xs align-top text-slate-600">
+                  {{ action.date | date : 'dd/MM/yyyy HH:mm' }}
+                </td>
+
+                <!-- Type -->
+                <td class="px-3 py-4 align-top text-center">
+                  <span
+                    class="inline-block rounded-full px-2 py-0.5 text-xs font-medium"
+                    [ngClass]="getTypeClass(action.type)"
+                  >
+                    {{ getTypeLabel(action.type) }}
+                  </span>
+                </td>
+              </tr>
+
+              <tr *ngIf="filtered().length === 0">
+                <td colspan="5" class="px-4 py-10 text-center text-slate-500">
+                  <div class="flex flex-col items-center gap-3">
+                    <svg
+                      class="w-12 h-12 text-slate-300"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path d="M12 8v4l3 3" stroke-width="2" stroke-linecap="round"></path>
+                      <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2"></path>
+                    </svg>
+                    <p>Aucune action trouvée</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ===== Liste Mobile ===== -->
+      <div *ngIf="!loading()" class="grid gap-3 mt-4 sm:hidden">
+        <div
+          *ngFor="let action of filtered(); trackBy: trackById"
+          class="p-4 bg-white border rounded-xl"
+        >
+          <div class="flex items-start justify-between gap-3 mb-2">
+            <div class="flex-1 min-w-0">
+              <h3
+                class="font-semibold text-slate-900 line-clamp-2 break-words"
+                [title]="action.description"
+              >
+                {{ action.description }}
+              </h3>
+              <p class="mt-1 text-xs text-slate-500" *ngIf="action.details">
+                {{ action.details }}
+              </p>
+            </div>
+            <span
+              class="px-2 py-1 text-xs font-medium rounded-full flex-shrink-0"
+              [ngClass]="getTypeClass(action.type)"
+            >
+              {{ getTypeLabel(action.type) }}
+            </span>
+          </div>
+
+          <div class="mt-2 pt-2 border-t border-slate-100">
+            <div class="flex items-center justify-between text-xs text-slate-500 mb-1">
+              <span class="font-medium">{{ action.nomResponsable || '—' }}</span>
+            </div>
+            <div class="flex items-center justify-between text-xs text-slate-400">
+              <span>{{ action.emailResponsable || '—' }}</span>
+              <span>{{ action.date | date : 'dd/MM/yy HH:mm' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Message si aucune action -->
+        <div *ngIf="filtered().length === 0" class="p-8 text-center bg-white border rounded-xl">
+          <svg
+            class="w-12 h-12 mx-auto text-slate-300"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M12 8v4l3 3" stroke-width="2" stroke-linecap="round"></path>
+            <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2"></path>
+          </svg>
+          <p class="mt-3 text-sm text-slate-500">Aucune action trouvée</p>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>

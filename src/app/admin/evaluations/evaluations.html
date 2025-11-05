@@ -1,0 +1,1016 @@
+<!-- ADMIN EVALUATIONS — FPBG -->
+<div class="w-full">
+  <div class="grid gap-6 md:grid-cols-[280px,1fr]">
+    <!-- ===== SIDEBAR ===== -->
+    <aside
+      class="hidden text-xs font-medium bg-white border shadow-sm md:block md:sticky md:top-0 md:self-start md:min-h-screen text-slate-600"
+    >
+      <div class="p-6 border-b">
+        <p class="text-xl font-bold tracking-wider text-emerald-400 uppercase">
+          Espace Administrateur
+        </p>
+
+        <div class="grid grid-cols-2 gap-2 mt-4 text-center">
+          <div class="p-3 rounded bg-slate-100">
+            <p class="text-[11px] text-green-400">Projets</p>
+            <p class="text-lg font-semibold text-slate-600">{{ totalProjets() }}</p>
+          </div>
+          <div class="p-3 rounded bg-slate-100">
+            <p class="text-[11px] text-green-400">Appel à Projets</p>
+            <p class="text-lg font-semibold text-slate-600">{{ totalAAP() }}</p>
+          </div>
+        </div>
+      </div>
+
+      <nav class="p-2 text-sm">
+        <div class="px-3 py-2 text-slate-600">Navigation</div>
+
+        <a
+          routerLink="/admin/dashboard"
+          routerLinkActive="bg-green-500/10 border-l-4 border-green-500"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="block px-3 py-2 cursor-pointer hover:bg-green-500/10 hover:border-l-4 hover:border-green-500"
+        >
+          Vue d'ensemble
+        </a>
+
+        <a
+          routerLink="/admin/projets"
+          routerLinkActive="bg-green-500/10 border-l-4 border-green-500"
+          class="block px-3 py-2 cursor-pointer hover:bg-green-500/10 hover:border-l-4 hover:border-green-500"
+        >
+          Projets
+        </a>
+
+        <a
+          routerLink="/admin/appels-projets"
+          routerLinkActive="bg-green-500/10 border-l-4 border-green-500"
+          class="block px-3 py-2 cursor-pointer hover:bg-green-500/10 hover:border-l-4 hover:border-green-500"
+        >
+          Appels à Projets
+        </a>
+
+        <a
+          routerLink="/admin/evaluateurs"
+          routerLinkActive="bg-green-500/10 border-l-4 border-green-500"
+          class="block px-3 py-2 cursor-pointer hover:bg-green-500/10 hover:border-l-4 hover:border-green-500"
+        >
+          Evaluateurs
+        </a>
+
+        <a
+          routerLink="/admin/evaluations"
+          routerLinkActive="bg-green-500/10 border-l-4 border-green-500"
+          class="block px-3 py-2 cursor-pointer hover:bg-green-500/10 hover:border-l-4 hover:border-green-500"
+        >
+          Evaluations
+        </a>
+
+        <a
+          routerLink="/admin/statistiques"
+          routerLinkActive="bg-green-500/10 border-l-4 border-green-500"
+          class="block px-3 py-2 cursor-pointer hover:bg-green-500/10 hover:border-l-4 hover:border-green-500"
+        >
+          Statistiques
+        </a>
+
+        <a
+          routerLink="/admin/historique"
+          routerLinkActive="bg-green-500/10 border-l-4 border-green-500"
+          class="block px-3 py-2 cursor-pointer hover:bg-green-500/10 hover:border-l-4 hover:border-green-500"
+        >
+          Historique des actions
+        </a>
+      </nav>
+
+      <div class="p-2 mt-3 border-t">
+        <button
+          type="button"
+          class="w-full px-3 py-2 text-left hover:bg-green-500/10"
+          (click)="logout()"
+        >
+          Se déconnecter
+        </button>
+      </div>
+    </aside>
+
+    <!-- ===== MAIN ===== -->
+    <section class="min-h-screen px-4 md:pr-6">
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div class="min-w-0 flex-1">
+          <h1 class="pt-3 text-2xl sm:text-3xl"><strong>Evaluations</strong></h1>
+          <p class="pt-3 text-sm sm:text-base text-slate-600">Gestion des sessions d'évaluations</p>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <button
+            type="button"
+            class="inline-flex items-center gap-2 px-4 py-2 border border-green-600 text-green-600 rounded-lg hover:bg-green-50"
+            (click)="ouvrirModalParametrage()"
+          >
+            Parametrage
+          </button>
+
+          <button
+            type="button"
+            class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+            (click)="ouvrirModalNouvelleSession()"
+          >
+            Nouvelle session
+          </button>
+        </div>
+      </div>
+
+      <!-- Loading -->
+      <div *ngIf="loading()" class="flex items-center justify-center py-12 mt-8">
+        <svg
+          class="w-10 h-10 text-green-600 animate-spin"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            class="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            stroke-width="4"
+          ></circle>
+          <path
+            class="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+          ></path>
+        </svg>
+      </div>
+
+      <!-- ===== Tableau des sessions ===== -->
+      <div *ngIf="!loading()" class="mt-6">
+        <h2 class="text-lg font-semibold mb-4">Sessions d'évaluations</h2>
+
+        <div class="bg-white border rounded-xl overflow-hidden">
+          <div class="relative max-h-[70vh] overflow-auto">
+            <table class="w-full border-collapse table-fixed">
+              <thead class="sticky top-0 z-20 shadow-sm bg-slate-50">
+                <tr class="text-xs font-medium tracking-wide text-left uppercase text-slate-600">
+                  <th class="px-3 py-3 w-[15%]">Intitule</th>
+                  <th class="px-3 py-3 w-[25%]">Appels d'offres</th>
+                  <th class="px-3 py-3 w-[10%]">Projets</th>
+                  <th class="px-3 py-3 w-[10%]">Evaluateurs</th>
+                  <th class="px-3 py-3 w-[12%]">Statut</th>
+                  <th class="px-3 py-3 w-[18%]">Période</th>
+                  <th class="px-3 py-3 w-[10%] text-right">Action</th>
+                </tr>
+              </thead>
+
+              <tbody class="divide-y">
+                <tr
+                  *ngFor="let session of sessions(); trackBy: trackById"
+                  class="hover:bg-slate-50"
+                >
+                  <td class="px-3 py-4">{{ session.intitule }}</td>
+                  <td class="px-3 py-4 text-sm text-slate-600">{{ session.appelOffre }}</td>
+                  <td class="px-3 py-4 text-center">{{ session.nbProjets }}</td>
+                  <td class="px-3 py-4 text-center">{{ session.nbEvaluateurs }}</td>
+                  <td class="px-3 py-4">
+                    <span
+                      class="inline-block rounded-full px-2 py-0.5 text-xs font-medium"
+                      [ngClass]="getStatutClass(session.statut)"
+                    >
+                      {{ session.statut }}
+                    </span>
+                  </td>
+                  <td class="px-3 py-4 text-xs text-slate-600">
+                    {{ formatDateTime(session.dateDebut) }} - {{ formatDateTime(session.dateFin) }}
+                  </td>
+                  <td class="px-3 py-4 text-right">
+                    <button
+                      type="button"
+                      class="px-3 py-1.5 rounded-lg border text-xs hover:bg-slate-50"
+                      (click)="ouvrirModalVoir(session)"
+                    >
+                      Voir
+                    </button>
+                  </td>
+                </tr>
+
+                <tr *ngIf="sessions().length === 0">
+                  <td colspan="7" class="px-4 py-10 text-center text-slate-500">
+                    <p>Aucune session d'évaluation trouvée</p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- ===== MODALE: Nouvelle Session - Étape 1 ===== -->
+<div
+  *ngIf="modalNouvelleSession() && etapeNouvelleSession() === 1"
+  class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+  (click)="fermerModalNouvelleSession()"
+>
+  <div
+    class="bg-white rounded-xl shadow-xl w-[90%] max-w-4xl max-h-[90vh] overflow-y-auto"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="p-6">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-semibold">Sessions d'évaluations</h2>
+        <div class="flex gap-3">
+          <button
+            type="button"
+            class="px-4 py-2 border border-green-600 text-green-600 rounded-lg hover:bg-green-50"
+            (click)="fermerModalNouvelleSession()"
+          >
+            Annuler
+          </button>
+          <button
+            type="button"
+            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+            (click)="allerEtape(2)"
+            [disabled]="!peutAllerEtape2()"
+          >
+            Suivant
+          </button>
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <select
+          [(ngModel)]="nouvelleSessionData.appelOffreId"
+          class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+        >
+          <option value="">Sélectionner un appel d'offre</option>
+          <option *ngFor="let aap of appelOffres()" [value]="aap.id">{{ aap.nom }}</option>
+        </select>
+      </div>
+
+      <div class="mb-4">
+        <input
+          type="text"
+          [(ngModel)]="nouvelleSessionData.intitule"
+          placeholder="Intitulé"
+          class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+        />
+      </div>
+
+      <p class="text-sm text-slate-500 mb-4">
+        Veuillez sélectionner les projets concernés par la session d'évaluation
+      </p>
+
+      <!-- Tableau de sélection des projets -->
+      <div class="border rounded-lg overflow-hidden">
+        <table class="w-full">
+          <thead class="bg-slate-50">
+            <tr class="text-xs font-medium text-left uppercase text-slate-600">
+              <th class="px-3 py-3">Organisation</th>
+              <th class="px-3 py-3">Projets</th>
+              <th class="px-3 py-3">Porteur</th>
+              <th class="px-3 py-3">Date de soumission</th>
+              <th class="px-3 py-3 text-center">
+                <input
+                  type="checkbox"
+                  [checked]="tousProjetsCochesEtape1()"
+                  (change)="toggleTousProjetsEtape1($event)"
+                  class="w-4 h-4 text-green-600 rounded focus:ring-green-500"
+                />
+              </th>
+            </tr>
+          </thead>
+          <tbody class="divide-y">
+            <tr *ngFor="let projet of projetsFiltres()" class="hover:bg-slate-50">
+              <td class="px-3 py-3 text-sm text-slate-600">{{ projet.organisation }}</td>
+              <td class="px-3 py-3 text-sm">{{ projet.nom }}</td>
+              <td class="px-3 py-3 text-sm text-slate-600">{{ projet.porteur }}</td>
+              <td class="px-3 py-3 text-xs text-slate-600">{{ projet.dateSoumission }}</td>
+              <td class="px-3 py-3 text-center">
+                <input
+                  type="checkbox"
+                  [checked]="nouvelleSessionData.projetsIds.includes(projet.id)"
+                  (change)="toggleProjetSelection(projet.id)"
+                  class="w-4 h-4 text-green-600 rounded focus:ring-green-500"
+                />
+              </td>
+            </tr>
+            <tr *ngIf="projetsFiltres().length === 0">
+              <td colspan="5" class="px-4 py-6 text-center text-slate-500">
+                <p class="text-sm">Aucun projet disponible</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODALE: Nouvelle Session - Étape 2 ===== -->
+<div
+  *ngIf="modalNouvelleSession() && etapeNouvelleSession() === 2"
+  class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+  (click)="fermerModalNouvelleSession()"
+>
+  <div
+    class="bg-white rounded-xl shadow-xl w-[90%] max-w-4xl max-h-[90vh] overflow-y-auto"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="p-6">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-semibold">Sessions d'évaluations</h2>
+        <div class="flex gap-3">
+          <button
+            type="button"
+            class="px-4 py-2 border border-green-600 text-green-600 rounded-lg hover:bg-green-50"
+            (click)="allerEtape(1)"
+          >
+            Retour
+          </button>
+          <button
+            type="button"
+            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+            (click)="creerSession()"
+            [disabled]="!peutCreerSession()"
+          >
+            Valider
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4 mb-4">
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Date et heure de début</label>
+          <input
+            type="datetime-local"
+            [(ngModel)]="nouvelleSessionData.dateDebut"
+            class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Date et heure de fin</label>
+          <input
+            type="datetime-local"
+            [(ngModel)]="nouvelleSessionData.dateFin"
+            class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+          />
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-slate-700 mb-1">
+          Grille d'évaluation *
+        </label>
+        <select
+          [(ngModel)]="nouvelleSessionData.grilleEvaluationId"
+          class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+        >
+          <option value="">Sélectionner grille d'évaluation</option>
+          <option *ngFor="let grille of grillesEvaluation()" [value]="grille.id">
+            {{ grille.nom }} ({{ grille.noteMax }} points)
+          </option>
+        </select>
+      </div>
+
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-slate-700 mb-1">
+          Seuil de sélection (en points) *
+        </label>
+        <input
+          type="number"
+          [(ngModel)]="nouvelleSessionData.seuilSelection"
+          min="0"
+          [max]="getNoteMaxGrilleSelectionnee()"
+          placeholder="Ex: 50"
+          class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+        />
+        <p class="text-xs text-slate-500 mt-1" *ngIf="nouvelleSessionData.grilleEvaluationId">
+          Un projet sera ADMISSIBLE si sa note totale ≥ {{ nouvelleSessionData.seuilSelection }} points
+          (Maximum: {{ getNoteMaxGrilleSelectionnee() }} points)
+        </p>
+        <p class="text-xs text-orange-600 mt-1" *ngIf="!nouvelleSessionData.grilleEvaluationId">
+          ⚠️ Veuillez d'abord sélectionner une grille d'évaluation
+        </p>
+      </div>
+
+      <p class="text-sm text-slate-500 mb-4">
+        Veuillez sélectionner les évaluateurs concernés par la session d'évaluation
+      </p>
+
+      <!-- Champ de recherche des évaluateurs -->
+      <div class="mb-4">
+        <div class="relative">
+          <input
+            type="text"
+            [(ngModel)]="rechercheEvaluateur"
+            placeholder="Rechercher un évaluateur par nom ou email..."
+            class="w-full px-4 py-2 pl-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+          />
+          <svg
+            class="absolute left-3 top-2.5 w-5 h-5 text-slate-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            ></path>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Tableau de sélection des évaluateurs -->
+      <div class="border rounded-lg overflow-hidden">
+        <table class="w-full">
+          <thead class="bg-slate-50">
+            <tr class="text-xs font-medium text-left uppercase text-slate-600">
+              <th class="px-3 py-3">Prenom</th>
+              <th class="px-3 py-3">Nom</th>
+              <th class="px-3 py-3">Adresse email</th>
+              <th class="px-3 py-3">Date de creation</th>
+              <th class="px-3 py-3">Projets evalues</th>
+              <th class="px-3 py-3 text-center">
+                <input
+                  type="checkbox"
+                  [checked]="tousEvaluateursCochesEtape2()"
+                  (change)="toggleTousEvaluateursEtape2($event)"
+                  class="w-4 h-4 text-green-600 rounded focus:ring-green-500"
+                />
+              </th>
+            </tr>
+          </thead>
+          <tbody class="divide-y">
+            <tr *ngFor="let evaluateur of evaluateursFiltres()" class="hover:bg-slate-50">
+              <td class="px-3 py-3 text-sm">{{ evaluateur.prenom }}</td>
+              <td class="px-3 py-3 text-sm">{{ evaluateur.nom }}</td>
+              <td class="px-3 py-3 text-sm text-slate-600">{{ evaluateur.email }}</td>
+              <td class="px-3 py-3 text-xs text-slate-600">{{ evaluateur.dateCreation }}</td>
+              <td class="px-3 py-3 text-center text-sm">{{ evaluateur.nbProjetsEvalues }}</td>
+              <td class="px-3 py-3 text-center">
+                <input
+                  type="checkbox"
+                  [checked]="nouvelleSessionData.evaluateursIds.includes(evaluateur.id)"
+                  (change)="toggleEvaluateurSelection(evaluateur.id)"
+                  class="w-4 h-4 text-green-600 rounded focus:ring-green-500"
+                />
+              </td>
+            </tr>
+            <tr *ngIf="evaluateursFiltres().length === 0">
+              <td colspan="6" class="px-4 py-6 text-center text-slate-500">
+                <p class="text-sm" *ngIf="rechercheEvaluateur()">Aucun évaluateur trouvé pour "{{ rechercheEvaluateur() }}"</p>
+                <p class="text-sm" *ngIf="!rechercheEvaluateur()">Aucun évaluateur disponible</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODALE: Voir Session ===== -->
+<div
+  *ngIf="modalVoir()"
+  class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+  (click)="fermerModalVoir()"
+>
+  <div
+    class="bg-white rounded-xl shadow-xl w-[90%] max-w-5xl max-h-[90vh] overflow-y-auto"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="p-6">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-semibold">{{ sessionSelectionnee()?.intitule }}</h2>
+        <button
+          type="button"
+          class="px-4 py-2 border rounded-lg hover:bg-slate-50"
+          (click)="fermerModalVoir()"
+        >
+          Fermer
+        </button>
+      </div>
+
+      <!-- Onglets -->
+      <div class="flex gap-4 mb-6 border-b">
+        <button
+          type="button"
+          class="px-4 py-2 border-b-2"
+          [ngClass]="
+            ongletVoir() === 'projets'
+              ? 'border-green-600 text-green-600'
+              : 'border-transparent text-slate-600'
+          "
+          (click)="changerOngletVoir('projets')"
+        >
+          Projets
+        </button>
+        <button
+          type="button"
+          class="px-4 py-2 border-b-2"
+          [ngClass]="
+            ongletVoir() === 'evaluateurs'
+              ? 'border-green-600 text-green-600'
+              : 'border-transparent text-slate-600'
+          "
+          (click)="changerOngletVoir('evaluateurs')"
+        >
+          Evaluateurs
+        </button>
+      </div>
+
+      <!-- Contenu onglet Projets -->
+      <div *ngIf="ongletVoir() === 'projets'" class="overflow-x-auto">
+        <table class="w-full border-collapse">
+          <thead class="bg-slate-50">
+            <tr class="text-xs font-medium text-left uppercase text-slate-600">
+              <th class="px-3 py-3 border">Projets</th>
+              <th
+                *ngFor="let evaluateur of sessionSelectionnee()?.evaluateurs"
+                class="px-3 py-3 border text-center"
+              >
+                {{ evaluateur.prenom }} {{ evaluateur.nom }}
+              </th>
+              <th class="px-3 py-3 border text-center">Note moyenne</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let projet of sessionSelectionnee()?.projets" class="hover:bg-slate-50">
+              <td class="px-3 py-3 border">{{ projet.nom }}</td>
+              <td *ngFor="let note of projet.notes" class="px-3 py-3 border text-center">
+                {{ note }}%
+              </td>
+              <td class="px-3 py-3 border text-center font-semibold">{{ projet.noteMoyenne }}%</td>
+            </tr>
+            <tr
+              *ngIf="
+                !sessionSelectionnee()?.projets ||
+                (sessionSelectionnee()?.projets?.length ?? 0) === 0
+              "
+            >
+              <td
+                [attr.colspan]="(sessionSelectionnee()?.evaluateurs?.length ?? 0) + 2"
+                class="px-4 py-6 text-center text-slate-500"
+              >
+                <p class="text-sm">Aucun projet dans cette session</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Contenu onglet Evaluateurs -->
+      <div *ngIf="ongletVoir() === 'evaluateurs'">
+        <p class="text-sm text-slate-500 mb-4">Liste des évaluateurs assignés à cette session</p>
+        <div class="grid gap-3">
+          <div
+            *ngFor="let evaluateur of sessionSelectionnee()?.evaluateurs"
+            class="p-4 border rounded-lg hover:bg-slate-50"
+          >
+            <div class="flex items-center justify-between">
+              <div class="flex-1">
+                <p class="font-medium">{{ evaluateur.prenom }} {{ evaluateur.nom }}</p>
+                <p class="text-sm text-slate-600">{{ evaluateur.email }}</p>
+                <p class="text-xs text-slate-500 mt-1" *ngIf="evaluateur.nbProjetsAffectes">
+                  {{ evaluateur.nbProjetsAffectes }} projet(s) affecté(s)
+                </p>
+              </div>
+              <div class="ml-4">
+                <!-- Badge Disponibilité -->
+                <span
+                  class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
+                  [ngClass]="{
+                    'bg-green-100 text-green-800': evaluateur.disponibilite === 'OUI',
+                    'bg-yellow-100 text-yellow-800': evaluateur.disponibilite === 'EN_ATTENTE',
+                    'bg-red-100 text-red-800': evaluateur.disponibilite === 'NON'
+                  }"
+                >
+                  <svg
+                    *ngIf="evaluateur.disponibilite === 'OUI'"
+                    class="w-3 h-3 mr-1"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                  <svg
+                    *ngIf="evaluateur.disponibilite === 'NON'"
+                    class="w-3 h-3 mr-1"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                  <svg
+                    *ngIf="evaluateur.disponibilite === 'EN_ATTENTE'"
+                    class="w-3 h-3 mr-1"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                  {{
+                    evaluateur.disponibilite === 'OUI'
+                      ? 'Confirmé'
+                      : evaluateur.disponibilite === 'NON'
+                      ? 'Refusé'
+                      : 'En attente'
+                  }}
+                </span>
+                <p
+                  *ngIf="evaluateur.reponduLe"
+                  class="text-xs text-slate-500 mt-1 text-right"
+                >
+                  {{ evaluateur.reponduLe | date: 'dd/MM/yyyy HH:mm' }}
+                </p>
+              </div>
+            </div>
+          </div>
+          <div
+            *ngIf="
+              !sessionSelectionnee()?.evaluateurs ||
+              (sessionSelectionnee()?.evaluateurs?.length ?? 0) === 0
+            "
+            class="p-8 text-center text-slate-500"
+          >
+            <p class="text-sm">Aucun évaluateur assigné à cette session</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODALE: Paramétrage (Grilles d'évaluation) ===== -->
+<div
+  *ngIf="modalParametrage()"
+  class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+  (click)="fermerModalParametrage()"
+>
+  <div
+    class="bg-white rounded-xl shadow-xl w-[90%] max-w-4xl max-h-[90vh] overflow-y-auto"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="p-6">
+      <div class="flex items-center justify-between mb-6">
+        <button
+          type="button"
+          class="px-4 py-2 border border-green-600 text-green-600 rounded-lg hover:bg-green-50"
+          (click)="ouvrirModalNouvelleGrille()"
+        >
+          Nouvelle grille
+        </button>
+        <button
+          type="button"
+          class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+          (click)="fermerModalParametrage()"
+        >
+          Enregistrer
+        </button>
+      </div>
+
+      <!-- Liste des grilles -->
+      <div class="border rounded-lg overflow-hidden">
+        <table class="w-full">
+          <thead class="bg-slate-50">
+            <tr class="text-xs font-medium text-left uppercase text-slate-600">
+              <th class="px-3 py-3">Nom</th>
+              <th class="px-3 py-3">Date de création</th>
+              <th class="px-3 py-3 text-center">Total points</th>
+              <th class="px-3 py-3 text-center">Note min</th>
+              <th class="px-3 py-3 text-center">Sections</th>
+              <th class="px-3 py-3 text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y">
+            <tr *ngFor="let grille of grillesEvaluation()" class="hover:bg-slate-50">
+              <td class="px-3 py-3 font-medium">{{ grille.nom }}</td>
+              <td class="px-3 py-3 text-xs text-slate-600">{{ formatDate(grille.creeLe || '') }}</td>
+              <td class="px-3 py-3 text-center font-medium text-green-600">{{ grille.noteMax }} pts</td>
+              <td class="px-3 py-3 text-center">{{ grille.noteMin }}</td>
+              <td class="px-3 py-3 text-center text-sm">{{ grille.sections?.length || 0 }}</td>
+              <td class="px-3 py-3 text-center">
+                <div class="flex items-center justify-center gap-2">
+                  <button
+                    type="button"
+                    class="text-blue-600 hover:text-blue-800"
+                    (click)="modifierGrille(grille)"
+                    title="Modifier"
+                  >
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path
+                        d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
+                        stroke-width="2"
+                      ></path>
+                      <path
+                        d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
+                        stroke-width="2"
+                      ></path>
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    class="text-red-600 hover:text-red-800"
+                    (click)="supprimerGrille(grille.id)"
+                    title="Supprimer"
+                  >
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path d="M3 6h18" stroke-width="2"></path>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" stroke-width="2"></path>
+                      <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke-width="2"></path>
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="grillesEvaluation().length === 0">
+              <td colspan="6" class="px-4 py-10 text-center text-slate-500">
+                <p>Aucune grille d'évaluation créée</p>
+                <p class="text-sm mt-1">Cliquez sur "Nouvelle grille" pour commencer</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODALE: Nouvelle Grille d'Évaluation (Système à Points) ===== -->
+<div
+  *ngIf="modalNouvelleGrille()"
+  class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+  (click)="fermerModalNouvelleGrille()"
+>
+  <div
+    class="bg-white rounded-xl shadow-xl w-[95%] max-w-6xl max-h-[95vh] overflow-y-auto"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="p-6">
+      <!-- En-tête avec onglets et bouton enregistrer -->
+      <div class="flex items-center justify-between mb-6">
+        <div class="flex gap-3">
+          <button
+            type="button"
+            class="px-4 py-2 rounded-lg font-medium"
+            [ngClass]="
+              ongletGrille() === 'nouveau'
+                ? 'bg-green-100 text-green-700'
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+            "
+            (click)="changerOngletGrille('nouveau')"
+          >
+            📋 Informations
+          </button>
+          <button
+            type="button"
+            class="px-4 py-2 rounded-lg font-medium"
+            [ngClass]="
+              ongletGrille() === 'titre'
+                ? 'bg-green-100 text-green-700'
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+            "
+            (click)="changerOngletGrille('titre')"
+          >
+            🏗️ Structure
+          </button>
+        </div>
+        <div class="flex items-center gap-4">
+          <div class="text-right">
+            <div class="text-xs text-slate-500">Total de points</div>
+            <div class="text-2xl font-bold text-green-600">{{ calculerTotalPoints() }}</div>
+          </div>
+          <button
+            type="button"
+            class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium"
+            (click)="enregistrerGrille()"
+          >
+            💾 Enregistrer
+          </button>
+        </div>
+      </div>
+
+      <!-- Onglet Informations -->
+      <div *ngIf="ongletGrille() === 'nouveau'">
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">Nom de la grille *</label>
+            <input
+              type="text"
+              [(ngModel)]="grilleEnEdition.nom"
+              placeholder="Ex: Grille d'évaluation AAP 2024"
+              class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+          </div>
+
+          <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h3 class="font-medium text-blue-900 mb-2">ℹ️ À propos du système à points</h3>
+            <ul class="text-sm text-blue-800 space-y-1">
+              <li>• Chaque critère a un nombre de <strong>points maximum</strong> (≥ 1)</li>
+              <li>• Le <strong>total de points</strong> est calculé automatiquement</li>
+              <li>• Les sections permettent d'organiser les critères</li>
+              <li>• Ajoutez des sections puis des critères dans l'onglet "Structure"</li>
+            </ul>
+          </div>
+
+          <!-- Résumé des sections -->
+          <div *ngIf="grilleEnEdition.sections.length > 0" class="border rounded-lg overflow-hidden">
+            <div class="bg-slate-50 px-4 py-3 border-b">
+              <h3 class="font-medium text-slate-700">Résumé de la structure</h3>
+            </div>
+            <div class="divide-y">
+              <div
+                *ngFor="let section of grilleEnEdition.sections; let i = index"
+                class="px-4 py-3 hover:bg-slate-50"
+              >
+                <div class="flex items-center justify-between">
+                  <div>
+                    <span class="font-medium">{{ section.nom }}</span>
+                    <span class="text-sm text-slate-500 ml-2"
+                      >({{ section.criteres.length }}
+                      {{ section.criteres.length > 1 ? 'critères' : 'critère' }})</span
+                    >
+                  </div>
+                  <div class="text-green-600 font-medium">{{ calculerSousTotal(section) }} pts</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Onglet Structure -->
+      <div *ngIf="ongletGrille() === 'titre'" class="space-y-6">
+        <!-- Ajouter une nouvelle section -->
+        <div class="border-2 border-dashed border-green-300 rounded-lg p-4 bg-green-50">
+          <h3 class="font-medium text-green-800 mb-3">➕ Ajouter une section</h3>
+          <div class="flex gap-3">
+            <input
+              type="text"
+              [(ngModel)]="nouvelleSection.nom"
+              placeholder="Ex: Critères techniques"
+              class="flex-1 px-4 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+            <input
+              type="number"
+              [(ngModel)]="nouvelleSection.poids"
+              min="0"
+              placeholder="Poids"
+              class="w-24 px-4 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+            <button
+              type="button"
+              class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium"
+              (click)="ajouterSection()"
+            >
+              Ajouter
+            </button>
+          </div>
+        </div>
+
+        <!-- Liste des sections -->
+        <div class="space-y-4">
+          <div
+            *ngFor="let section of grilleEnEdition.sections; let sectionIdx = index"
+            class="border-2 border-slate-200 rounded-lg overflow-hidden"
+          >
+            <!-- En-tête de section -->
+            <div class="bg-slate-100 px-4 py-3 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <h3 class="font-semibold text-slate-800">{{ section.nom }}</h3>
+                <span class="text-xs bg-slate-200 text-slate-600 px-2 py-1 rounded"
+                  >Poids: {{ section.poids }}</span
+                >
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="text-sm font-medium text-green-600"
+                  >Sous-total: {{ calculerSousTotal(section) }} pts</span
+                >
+                <button
+                  type="button"
+                  class="text-red-600 hover:text-red-800 text-sm font-medium"
+                  (click)="supprimerSection(sectionIdx)"
+                >
+                  🗑️ Supprimer section
+                </button>
+              </div>
+            </div>
+
+            <!-- Ajouter un critère dans cette section -->
+            <div class="bg-blue-50 px-4 py-3 border-b border-slate-200">
+              <div class="grid grid-cols-12 gap-3">
+                <div class="col-span-4">
+                  <input
+                    type="text"
+                    [(ngModel)]="nouveauCritere.libelle"
+                    placeholder="Libellé du critère"
+                    class="w-full px-3 py-2 border border-blue-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div class="col-span-4">
+                  <input
+                    type="text"
+                    [(ngModel)]="nouveauCritere.description"
+                    placeholder="Description (optionnel)"
+                    class="w-full px-3 py-2 border border-blue-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div class="col-span-1">
+                  <input
+                    type="number"
+                    [(ngModel)]="nouveauCritere.poids"
+                    min="0"
+                    placeholder="Poids"
+                    class="w-full px-3 py-2 border border-blue-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div class="col-span-2">
+                  <input
+                    type="number"
+                    [(ngModel)]="nouveauCritere.pointsMax"
+                    min="1"
+                    placeholder="Points max"
+                    class="w-full px-3 py-2 border border-blue-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div class="col-span-1">
+                  <button
+                    type="button"
+                    class="w-full px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
+                    (click)="ajouterCritere(sectionIdx)"
+                  >
+                    ➕
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Liste des critères -->
+            <div class="divide-y divide-slate-200">
+              <div
+                *ngFor="let critere of section.criteres; let critereIdx = index"
+                class="px-4 py-3 hover:bg-slate-50 flex items-center justify-between"
+              >
+                <div class="flex-1">
+                  <div class="font-medium text-slate-800">{{ critere.libelle }}</div>
+                  <div *ngIf="critere.description" class="text-sm text-slate-500 mt-1">
+                    {{ critere.description }}
+                  </div>
+                </div>
+                <div class="flex items-center gap-4">
+                  <span class="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded"
+                    >Poids: {{ critere.poids }}</span
+                  >
+                  <span class="text-sm font-medium text-green-600"
+                    >{{ critere.pointsMax }} pts</span
+                  >
+                  <button
+                    type="button"
+                    class="text-red-600 hover:text-red-800 text-sm"
+                    (click)="supprimerCritere(sectionIdx, critereIdx)"
+                  >
+                    🗑️
+                  </button>
+                </div>
+              </div>
+              <div
+                *ngIf="section.criteres.length === 0"
+                class="px-4 py-6 text-center text-slate-500 text-sm"
+              >
+                Aucun critère. Utilisez le formulaire ci-dessus pour ajouter des critères.
+              </div>
+            </div>
+          </div>
+
+          <div
+            *ngIf="grilleEnEdition.sections.length === 0"
+            class="text-center py-12 text-slate-500"
+          >
+            <div class="text-4xl mb-3">📋</div>
+            <p>Aucune section créée.</p>
+            <p class="text-sm mt-1">Utilisez le formulaire ci-dessus pour ajouter une section.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
