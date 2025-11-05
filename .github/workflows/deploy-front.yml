@@ -22,25 +22,41 @@ jobs:
           script: |
             set -e
             echo "=== Connexion sur le serveur ==="
-            mkdir -p '${{ secrets.SERVER_PATH_FRONT }}'
-            cd '${{ secrets.SERVER_PATH_FRONT }}'
+
+            BASE_DIR="${{ secrets.SERVER_PATH_PRONT }}"
+            echo "Chemin front : '$BASE_DIR'"
+
+            mkdir -p "$BASE_DIR"
+            cd "$BASE_DIR"
 
             git config --global credential.helper ""
 
-            # --- CLONAGE INITIAL ---
+            # --- CAS 1 : pas encore de dépôt, on clone directement la branche test-front ---
             if [ ! -d .git ]; then
-              echo "=== Aucun dépôt Git trouvé, clonage initial ==="
-              git clone --depth=1 "${{ secrets.GIT_REPO_URL }}" .
+              echo "=== Aucun dépôt Git trouvé, clonage initial sur test-front ==="
+              git clone --depth=1 --branch test-front "${{ secrets.GIT_REPO_URL }}" .
+            else
+              echo "=== Dépôt déjà présent, mise à jour ==="
+              git remote set-url origin "${{ secrets.GIT_REPO_URL }}"
+              git fetch origin --prune
+
+              echo "=== Vérification de origin/test-front ==="
+              if git show-ref --verify --quiet refs/remotes/origin/test-front; then
+                echo "origin/test-front trouvé, checkout forcé"
+                # crée / écrase la branche locale test-front à partir de origin/test-front
+                git checkout -B test-front origin/test-front
+              else
+                echo "❌ origin/test-front introuvable, reclonage complet..."
+                cd ..
+                rm -rf "$BASE_DIR"
+                mkdir -p "$BASE_DIR"
+                cd "$BASE_DIR"
+                git clone --depth=1 --branch test-front "${{ secrets.GIT_REPO_URL }}" .
+              fi
             fi
 
-            echo "=== Récupération du code (branche test-front) ==="
-            git fetch origin
-            if git rev-parse --verify test-front >/dev/null 2>&1; then
-              git checkout test-front
-            else
-              git checkout -b test-front origin/test-front
-            fi
-            git pull origin test-front
+            echo "=== Dernier commit sur test-front ==="
+            git log -1 --oneline || true
 
             echo "=== Vérification / installation de Node.js & npm ==="
             if ! command -v node >/dev/null 2>&1; then
@@ -49,8 +65,8 @@ jobs:
               sudo apt-get install -y nodejs
             fi
 
-            echo "ode version : $(node -v)"
-            echo "NPM version : $(npm -v)"
+            echo "✅ Node version : $(node -v)"
+            echo "✅ NPM version : $(npm -v)"
 
             echo "=== Installation des dépendances (front) ==="
             npm install
@@ -60,10 +76,10 @@ jobs:
 
             echo "=== Vérification du dossier dist ==="
             if [ -d dist ]; then
-              echo "Build réussi : le dossier dist existe."
+              echo "✅ Build réussi : le dossier dist existe."
             else
               echo "❌ Build échoué : le dossier dist est introuvable."
               exit 1
             fi
 
-            echo "=== Pipeline terminé avec succès (CI front OK) ==="
+            echo "=== ✅ Pipeline terminé avec succès (CI front OK) ==="
