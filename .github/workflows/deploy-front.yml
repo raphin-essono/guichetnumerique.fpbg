@@ -1,0 +1,69 @@
+name: Build front sur serveur (branche test-front)
+
+on:
+  push:
+    branches:
+      - test-front
+  workflow_dispatch:
+
+jobs:
+  build-front:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Build front via SSH sur le serveur
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.PRIVATE_KEY }}
+          passphrase: ${{ secrets.PASSPHRASE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            set -e
+            echo "=== Connexion sur le serveur ==="
+            mkdir -p '${{ secrets.SERVER_PATH_FRONT }}'
+            cd '${{ secrets.SERVER_PATH_FRONT }}'
+
+            git config --global credential.helper ""
+
+            # --- CLONAGE INITIAL ---
+            if [ ! -d .git ]; then
+              echo "=== Aucun dépôt Git trouvé, clonage initial ==="
+              git clone --depth=1 "${{ secrets.GIT_REPO_URL }}" .
+            fi
+
+            echo "=== Récupération du code (branche test-front) ==="
+            git fetch origin
+            if git rev-parse --verify test-front >/dev/null 2>&1; then
+              git checkout test-front
+            else
+              git checkout -b test-front origin/test-front
+            fi
+            git pull origin test-front
+
+            echo "=== Vérification / installation de Node.js & npm ==="
+            if ! command -v node >/dev/null 2>&1; then
+              echo "Node.js non trouvé, installation..."
+              curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+              sudo apt-get install -y nodejs
+            fi
+
+            echo "ode version : $(node -v)"
+            echo "NPM version : $(npm -v)"
+
+            echo "=== Installation des dépendances (front) ==="
+            npm install
+
+            echo "=== Build front (npm run build) ==="
+            npm run build
+
+            echo "=== Vérification du dossier dist ==="
+            if [ -d dist ]; then
+              echo "Build réussi : le dossier dist existe."
+            else
+              echo "❌ Build échoué : le dossier dist est introuvable."
+              exit 1
+            fi
+
+            echo "=== Pipeline terminé avec succès (CI front OK) ==="
