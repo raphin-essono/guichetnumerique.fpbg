@@ -46,7 +46,7 @@ jobs:
                 # crée / écrase la branche locale test-front à partir de origin/test-front
                 git checkout -B test-front origin/test-front
               else
-                echo "❌ origin/test-front introuvable, reclonage complet..."
+                echo "origin/test-front introuvable, reclonage complet..."
                 cd ..
                 rm -rf "$BASE_DIR"
                 mkdir -p "$BASE_DIR"
@@ -65,8 +65,8 @@ jobs:
               sudo apt-get install -y nodejs
             fi
 
-            echo "✅ Node version : $(node -v)"
-            echo "✅ NPM version : $(npm -v)"
+            echo "Node version : $(node -v)"
+            echo "NPM version : $(npm -v)"
 
             echo "=== Installation des dépendances (front) ==="
             npm install
@@ -76,10 +76,10 @@ jobs:
 
             echo "=== Vérification du dossier dist ==="
             if [ -d dist ]; then
-              echo "✅ Build réussi : le dossier dist existe."
+              echo "Build réussi : le dossier dist existe."
             else
-              echo "❌ Build échoué : le dossier dist est introuvable."
+              echo "Build échoué : le dossier dist est introuvable."
               exit 1
             fi
 
-            echo "=== ✅ Pipeline terminé avec succès (CI front OK) ==="
+            echo "=== Pipeline terminé avec succès (CI front OK) ==="
