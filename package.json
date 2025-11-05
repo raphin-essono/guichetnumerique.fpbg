@@ -1,0 +1,26 @@
+{
+  "name": "guichetnumerique.fpbg",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/raphin-essono/guichetnumerique.fpbg.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/raphin-essono/guichetnumerique.fpbg/issues"
+  },
+  "homepage": "https://github.com/raphin-essono/guichetnumerique.fpbg#readme",
+  "dependencies": {
+    "express": "^5.1.0",
+    "path": "^0.12.7"
+  }
+}

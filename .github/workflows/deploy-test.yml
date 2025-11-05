@@ -2,33 +2,52 @@ name: Déploiement sur serveur (branche test, sans Docker)
 
 on:
   push:
-    branches: [ "test" ]
+    branches:
+      - test
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Déployer via SSH sur le serveur
-        uses: appleboy/ssh-action@v1.2.0
+      - name: Déploiement via SSH sur le serveur
+        uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
+
+          # ➜ Choisir UNE méthode d’authentification :
+          # 1) si tu utilises un mot de passe SSH :
           password: ${{ secrets.SSH_PASSWORD }}
+          # 2) si tu utilises une clé privée :
+          # key: ${{ secrets.SSH_PRIVATE_KEY }}
+
           port: ${{ secrets.SSH_PORT }}
           script: |
+            set -e  # stoppe le script dès qu'une commande échoue
+
             echo "=== Connexion sur le serveur ==="
-            cd ${{ secrets.SERVER_PATH }}
+            cd '${{ secrets.SERVER_PATH }}'
 
             echo "=== Récupération du code (branche test) ==="
             git fetch origin
+
             # si la branche test n'existe pas encore localement, on la crée
-            git checkout test || git checkout -b test
+            if git rev-parse --verify test >/dev/null 2>&1; then
+              git checkout test
+            else
+              git checkout -b test origin/test
+            fi
+
             git pull origin test
 
             echo "=== Installation des dépendances ==="
             npm install --production
 
             echo "=== (Re)démarrage de l'app avec PM2 ==="
+            # si le process existe, on restart, sinon on le crée
             pm2 restart guichet-fpbg || pm2 start server.js --name guichet-fpbg
+
             pm2 save
+
+            echo "=== Déploiement terminé avec succès ✅ ==="
