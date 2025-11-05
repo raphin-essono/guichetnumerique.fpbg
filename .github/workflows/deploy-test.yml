@@ -15,26 +15,33 @@ jobs:
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
-
-          # --- Authentification par clé ---
           key: ${{ secrets.PRIVATE_KEY }}
           passphrase: ${{ secrets.PASSPHRASE_KEY }}
           port: ${{ secrets.SSH_PORT }}
 
-          # --- Commandes exécutées sur le serveur ---
           script: |
             set -e
 
             echo "=== Connexion sur le serveur ==="
+            mkdir -p '${{ secrets.SERVER_PATH }}'
             cd '${{ secrets.SERVER_PATH }}'
+
+            # --- PREMIÈRE FOIS : CLONE SI PAS DE .git ---
+            if [ ! -d .git ]; then
+              echo "=== Aucun dépôt Git trouvé, clonage initial ==="
+              git clone ${{ secrets.GIT_REPO_URL }} .
+            fi
 
             echo "=== Récupération du code (branche test) ==="
             git fetch origin
+
+            # Branche test : si elle existe déjà localement, on la prend, sinon on la crée depuis origin/test
             if git rev-parse --verify test >/dev/null 2>&1; then
               git checkout test
             else
               git checkout -b test origin/test
             fi
+
             git pull origin test
 
             echo "=== Installation des dépendances ==="
